@@ -184,7 +184,7 @@ class Tokenizer {
                if ($this->tagChange($this->ctag, $text, $i)) {
                   // Sections (Helpers) can accept parameters
                   // Same thing for Partials (little known fact)
-                  if (in_array($this->tagType, array(self::T_SECTION, self::T_ESCAPED, self::T_UNESCAPED, self::T_PARTIAL, self::T_PARTIAL_2))) {
+                  if (in_array($this->tagType, array(self::T_SECTION, self::T_INVERTED, self::T_ESCAPED, self::T_UNESCAPED, self::T_PARTIAL, self::T_PARTIAL_2))) {
                      $args = trim($this->buffer);
 
                      $newBuffer = explode(' ', trim($this->buffer), 2);

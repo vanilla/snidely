@@ -20,6 +20,11 @@ class Snidely {
     public $helpers = array();
 
     /**
+     * @var array An array of partials for the template.
+     */
+    protected $partials = array();
+
+    /**
      * @var int The pushed error reporting.
      */
     protected $pushedErrorReporting;
@@ -34,24 +39,23 @@ class Snidely {
      * @param string $template
      * @param Snidely\Compiler $compiler
      */
-    public function compile($template, $key = null, $compiler = null) {
+    public function compile($template, $key = null) {
         if ($key === null)
             $key = md5($template);
 
         $path = $this->cachePath."$key.php";
         if (true || !file_exists($path)) {
-            $php = "<?php\n".$this->precompile($template, $compiler);
+            $php = "<?php\n".$this->precompile($template);
             $this->file_put_contents_atomic($path, $php, $this->cacheFileMode);
         }
 
         return require_snidely($this, $path);
     }
 
-    public function precompile($template, $compiler = null) {
+    public function precompile($template) {
         $nodes = $this->parse($template);
 
-        if ($compiler === null)
-            $compiler = new PhpCompiler();
+        $compiler = new PhpCompiler();
         $compiler->snidely = $this;
 
         return $compiler->compile($nodes);
@@ -129,6 +133,14 @@ class Snidely {
         return $nodes;
     }
 
+    public function partial($name, $context, $root) {
+        if (isset($this->partials[$name])) {
+            call_user_func($this->partials[$name], $context, $root);
+        } else {
+            echo "\n<!-- Could not find partial $name -->\n";
+        }
+    }
+
     public function popErrorReporting() {
         if ($this->pushedErrorReporting !== null) {
             error_reporting($this->pushedErrorReporting);
@@ -147,6 +159,20 @@ class Snidely {
             $callback = $name;
 
         $this->helpers[$name] = $callback;
+    }
+
+    /**
+     * Register a
+     * @param string $name The name of the partial.
+     * @param string|callable $partial A template source or function that implements the partial.
+     */
+    public function registerPartial($name, $partial, $force_compile = false) {
+        if (!$force_compile && is_callable($partial)) {
+            $this->partials[$name] = $partial;
+        } else {
+            $fn = $this->compile($partial);
+            $this->partials[$name] = $fn;
+        }
     }
 
     /**

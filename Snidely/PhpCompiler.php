@@ -86,79 +86,6 @@ class PhpCompiler extends Compiler {
         }
     }
 
-    /**
-     * Strip the text nodes around comments.
-     *
-     * @param type $nodes
-     */
-    protected function stripStandalone($nodes, $edges = false) {
-        $unset = array();
-
-        if ($edges && count($nodes) > 0) {
-            // Trim an empty line at the beginning.
-            if (isset($nodes[0])
-                && $nodes[0][Tokenizer::TYPE] === Tokenizer::T_TEXT
-                && substr($nodes[0][Tokenizer::VALUE], -1) === "\n"
-                && trim($nodes[0][Tokenizer::VALUE]) === '') {
-
-                $unset[0] = true;
-            }
-
-            // Trim empty leading space at the end.
-            $l = count($nodes) - 1;
-            if ($nodes[$l][Tokenizer::TYPE] === Tokenizer::T_TEXT
-                && substr($nodes[$l][Tokenizer::VALUE], -1) !== "\n"
-                && trim($nodes[$l][Tokenizer::VALUE]) === '') {
-
-                $unset[$l] = true;
-            }
-        }
-
-        // Loop through the nodes and figure out which comments to strip.
-        foreach ($nodes as $i => &$node) {
-            if (in_array($node[Tokenizer::TYPE], array(Tokenizer::T_COMMENT, Tokenizer::T_SECTION, Tokenizer::T_DELIM_CHANGE ))) {
-                // Strip empty text before the comment.
-                $j = $i - 1;
-                if (isset($nodes[$j])) {
-                    if ($nodes[$j][Tokenizer::TYPE] === Tokenizer::T_TEXT) {
-                        $value = $nodes[$j][Tokenizer::VALUE];
-                        if (substr($value, -1) !== "\n") {
-                            if (trim($value) === '') {
-                                // Remove empty lines.
-                                $unset[$j] = true;
-                            } else {
-                                // This is an inline comment. Don't trim.
-                                continue;
-                            }
-                        }
-                    }
-                }
-                // Strip empty text after the comment.
-                $h = $i + 1;
-                if (isset($nodes[$h])) {
-                    if ($nodes[$h][Tokenizer::TYPE] === Tokenizer::T_TEXT) {
-                        $value = $nodes[$h][Tokenizer::VALUE];
-                        if (substr($value, -1) === "\n" && trim($value) === '') {
-                            // Remove empty lines.
-                            $unset[$h] = true;
-                        }
-                    } else {
-                        unset($unset[$j]);
-                    }
-                }
-            }
-
-            if (isset($node[Tokenizer::NODES]) && is_array($node[Tokenizer::NODES])) {
-                $node[Tokenizer::NODES] = $this->stripStandalone($node[Tokenizer::NODES], true);
-            }
-        }
-        // Now that we've gathered the unset indexes unset the nodes.
-        foreach ($unset as $i => $v) {
-            unset($nodes[$i]);
-        }
-        return array_values($nodes);
-    }
-
     public function escaped($node, $indent) {
         $result = $this->php(true) .
                 $this->indent($indent) .
@@ -354,6 +281,12 @@ class PhpCompiler extends Compiler {
         return null;
     }
 
+    public function inverted($node, $indent) {
+        $node[Tokenizer::ARGS] = array_merge($node[Tokenizer::ARGS], $node[Tokenizer::ARGS]);
+
+        return $this->unlessHelper($node, $indent);
+    }
+
     protected function ifHelper($node, $indent) {
         $result = $this->str()."\n"
                 . $this->getSnidely($node, $indent)
@@ -390,6 +323,20 @@ class PhpCompiler extends Compiler {
         } else  {
             return var_export($val, true);
         }
+    }
+
+    public function partial($node, $indent) {
+        $result = $this->str().$this->php(true);
+
+        $name = $node[Tokenizer::NAME];
+
+        $result .= "\n"
+                . $this->getSnidely($node, $indent)."\n"
+                . $this->indent($indent).'$snidely->partial('
+                . var_export($name, true)
+                . ", \$context, \$root);\n\n";
+
+        return $result;
     }
 
     public function php($value, $indent = 0) {

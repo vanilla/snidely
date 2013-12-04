@@ -55,6 +55,7 @@ class Tokenizer {
    const T_SPACE = ' ';
    const T_SLASH = '/';
    const T_DOT = '.';
+   const T_PRAGMA = '%';
 
    const T_ESCAPED = '_v';
    const T_UNESCAPED = '{';
@@ -77,7 +78,8 @@ class Tokenizer {
       self::T_ESCAPED => true,
       self::T_UNESCAPED => true,
       self::T_UNESCAPED_2 => true,
-      self::T_ELSE => true
+      self::T_ELSE => true,
+      self::T_PRAGMA => true,
    );
    // Interpolated tags
    private static $_interpolatedTags = array(
@@ -184,7 +186,7 @@ class Tokenizer {
                if ($this->tagChange($this->ctag, $text, $i)) {
                   // Sections (Helpers) can accept parameters
                   // Same thing for Partials (little known fact)
-                  if (in_array($this->tagType, array(self::T_SECTION, self::T_INVERTED, self::T_ESCAPED, self::T_UNESCAPED, self::T_PARTIAL, self::T_PARTIAL_2))) {
+                  if (in_array($this->tagType, array(self::T_SECTION, self::T_INVERTED, self::T_ESCAPED, self::T_UNESCAPED, self::T_UNESCAPED_2, self::T_PARTIAL, self::T_PARTIAL_2))) {
                      $args = trim($this->buffer);
 
                      $newBuffer = explode(' ', trim($this->buffer), 2);
@@ -261,8 +263,12 @@ class Tokenizer {
     */
    protected function flushBuffer() {
       if (!empty($this->buffer)) {
-         $this->tokens[] = array(self::TYPE => self::T_TEXT, self::VALUE => $this->buffer);
-         $this->buffer = '';
+         $this->tokens[] = array(
+            self::TYPE  => self::T_TEXT,
+            self::LINE  => $this->line,
+            self::VALUE => $this->buffer
+        );
+        $this->buffer   = '';
       }
    }
 

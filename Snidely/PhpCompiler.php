@@ -38,7 +38,7 @@ class PhpCompiler extends Compiler {
         $result = $this->php(true);
 
         if ($declaration)
-            $result .= "function(\$context, \$root = null) use (\$snidely) {\n";
+            $result .= "function(\$context, \$root = null, \$key = null) use (\$snidely) {\n";
         $result .= $this->compileNodes($nodes, $indent + 1);
         if ($declaration)
             $result .= $this->str().$this->php(true, $indent) . '}';
@@ -105,6 +105,10 @@ class PhpCompiler extends Compiler {
         $result = '';
 
         foreach ($path as $part) {
+            if (!is_array($part)) {
+                throw new \Exception(print_r($path, true));
+            }
+
             $type = $part[Tokenizer::TYPE];
             $value = $part[Tokenizer::VALUE];
 
@@ -114,7 +118,16 @@ class PhpCompiler extends Compiler {
                         $var = '$root';
                     break;
                 case Tokenizer::T_VAR:
-                    $result .= '[' . var_export($value, true) . ']';
+                    if (in_array($value, array('@key', '@index'))) {
+                        // These are special variables that refer to the index of a loop.
+                        if (count($path) == 1) {
+                            return '$key';
+                        } else {
+                            $result .= '[$key]';
+                        }
+                    } else {
+                        $result .= '[' . var_export($value, true) . ']';
+                    }
                     break;
                 case Tokenizer::T_STRING:
                     return var_export($value, true);
@@ -267,6 +280,7 @@ class PhpCompiler extends Compiler {
                     $result .= $this->str('htmlspecialchars(' . $call . ')', $indent);
                     break;
                 case Tokenizer::T_UNESCAPED:
+                case Tokenizer::T_UNESCAPED2:
                     $result .= $this->str($call, $indent);
                     break;
                 default;

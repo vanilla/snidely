@@ -62,6 +62,7 @@ abstract class Compiler {
                     $result .= $this->escaped($node, $indent);
                     break;
                 case Tokenizer::T_UNESCAPED:
+                case Tokenizer::T_UNESCAPED_2:
                     $result .= $this->unescaped($node, $indent);
                     break;
                 case Tokenizer::T_SECTION:
@@ -188,6 +189,7 @@ abstract class Compiler {
      * @param type $nodes
      */
     protected function stripStandalone($nodes, $edges = false) {
+        return $nodes;
         $unset = array();
 
         if ($edges && count($nodes) > 0) {

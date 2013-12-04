@@ -72,7 +72,7 @@ class Snidely {
             if (isset($options['inverse'])) {
                 call_user_func($options['inverse'], $context, $options);
             }
-        } else {
+        } elseif (is_array($context)) {
             // Get the item seperator if any.
             if (isset($options['hash']['sep'])) {
                 $sep = $options['hash']['sep'];
@@ -83,8 +83,6 @@ class Snidely {
             // Loop through the context and call the template on each one.
             $first = true;
             foreach ($context as $key => $value) {
-                $context['@index'] = $context['@key'] = $key;
-
                 // Echo the seperator between the items.
                 if ($first) {
                     $first = false;
@@ -93,7 +91,7 @@ class Snidely {
                 }
 
                 // Call the item template.
-                call_user_func($options['fn'], $value, $options);
+                call_user_func($options['fn'], $value, $options, $key);
             }
         }
     }
@@ -186,8 +184,7 @@ class Snidely {
         } elseif (is_array($context) && isset($context[0])) {
             foreach ($context as $key => $context_row) {
                 $fn = $options['fn'];
-                $context_row['@index'] = $context_row['@key'] = $key;
-                $fn($context_row, $root);
+                $fn($context_row, $root, $key);
                 //         call_user_func($options['fn'], $context_row, $key);
             }
         } else {

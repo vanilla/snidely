@@ -119,7 +119,7 @@ class MustacheSpecTest extends PHPUnit_Framework_TestCase {
     }
 
     protected function provider($name) {
-        $paths = glob(__DIR__."/mustache-spec/specs/$name.yml");
+        $paths = glob(__DIR__."/mustache-spec/specs/$name.json");
 
         if (empty($paths)) {
             $this->markTestSkipped("Skipping $name. Make sure you symlink git@github.com:mustache/spec.git as mustache-spec.");
@@ -128,11 +128,12 @@ class MustacheSpecTest extends PHPUnit_Framework_TestCase {
         $result = array();
         $i = 0;
         foreach ($paths as $path) {
-            $basename = basename($path, '.yml');
-            $json = Yaml::parse($path);
+            $basename = basename($path, '.json');
+            $json = json_decode(file_get_contents($path), true);
             $tests = $json['tests'];
             foreach ($tests as $test) {
-                $result[] = array($basename, $i, $test);
+                $result["$name-{$test['name']}"] = array($basename, $i, $test);
+                $i++;
             }
         }
         return $result;

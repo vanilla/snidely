@@ -398,7 +398,7 @@ class PhpCompiler extends Compiler {
 
         $result .= "\n"
                 . $this->getSnidely($node, $indent)."\n"
-                . $this->indent($indent)."Snidely::section($context, \$root, $options);\n\n";
+                . $this->indent($indent)."\Snidely\Snidely::section($context, \$root, $options);\n\n";
         return $result;
 
         $result .= "if (!empty($context)):\n" .

@@ -24,7 +24,7 @@ class MustacheSpecTest extends PHPUnit_Framework_TestCase {
         }
 
 
-        $snidely = new Snidely();
+        $snidely = new \Snidely\Snidely();
 
         // Register any partials.
         if (isset($spec['partials']) && is_array($spec['partials'])) {

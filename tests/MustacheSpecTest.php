@@ -1,5 +1,9 @@
 <?php
 
+use Snidely\Snidely;
+use Symfony\Component\Yaml\Yaml;
+
+
 class MustacheSpecTest extends PHPUnit_Framework_TestCase {
     public $skip = array(
         'delimiters-sections' => 'Snidely does not support context stack traversal.',
@@ -24,7 +28,7 @@ class MustacheSpecTest extends PHPUnit_Framework_TestCase {
         }
 
 
-        $snidely = new \Snidely\Snidely();
+        $snidely = new Snidely();
 
         // Register any partials.
         if (isset($spec['partials']) && is_array($spec['partials'])) {
@@ -121,7 +125,7 @@ class MustacheSpecTest extends PHPUnit_Framework_TestCase {
         $i = 0;
         foreach ($paths as $path) {
             $basename = basename($path, '.yml');
-            $json = yaml_parse_file($path);
+            $json = Yaml::parse($path);
             $tests = $json['tests'];
             foreach ($tests as $test) {
                 $result[] = array($basename, $i, $test);

@@ -30,6 +30,10 @@ class MustacheSpecTest extends PHPUnit_Framework_TestCase {
 
         $snidely = new Snidely();
 
+        $snidely->cachePath($cache_path = __DIR__.'/cache/mustache-spec');
+        if (!file_exists($snidely->cachePath()))
+            mkdir($snidely->cachePath(), 0777, true);
+
         // Register any partials.
         if (isset($spec['partials']) && is_array($spec['partials'])) {
             foreach ($spec['partials'] as $name => $template) {

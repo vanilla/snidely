@@ -1,4 +1,10 @@
 <?php
+/**
+ * @author Todd Burry <todd@vanillaforums.com>
+ * @copyright 2013-2014 Vanilla Forums Inc.
+ * @license MIT
+ * @package Snidely
+ */
 
 namespace Snidely;
 
@@ -95,10 +101,10 @@ abstract class Compiler {
 
     protected function getSnidely($node, $indent, $comment = true) {
         // Figure out the brackets.
+        $rbracket = '}}';
         switch ($node[Tokenizer::TYPE]) {
             case Tokenizer::T_ESCAPED:
                 $lbracket = '{{';
-                $rbracket = '}}';
                 break;
             case Tokenizer::T_UNESCAPED:
                 $lbracket = '{{{';
@@ -106,7 +112,12 @@ abstract class Compiler {
                 break;
             case Tokenizer::T_SECTION:
                 $lbracket = '{{#';
-                $rbracket = '}}';
+                break;
+            case Tokenizer::T_INVERTED:
+                $lbracket = '{{^';
+                break;
+            case Tokenizer::T_PARTIAL:
+                $lbracket = '{{>';
                 break;
             default:
                 return '';

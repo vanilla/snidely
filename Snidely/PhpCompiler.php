@@ -1,4 +1,10 @@
 <?php
+/**
+ * @author Todd Burry <todd@vanillaforums.com>
+ * @copyright 2013-2014 Vanilla Forums Inc.
+ * @license MIT
+ * @package Snidely
+ */
 
 namespace Snidely;
 
@@ -11,20 +17,24 @@ class PhpCompiler extends Compiler {
 
     /// Methods ///
 
-    public function __construct() {
+    public function __construct($snidely) {
+        $this->snidely = $snidely;
         $this->registerCompileHelper('if', array($this, 'ifHelper'));
         $this->registerCompileHelper('unless', array($this, 'unlessHelper'));
-//        $this->registerCompileHelper('with', array($this, 'withHelper'));
+        $this->snidely->registerHelper('each', array('Snidely', 'each'));
+        $this->snidely->registerHelper('with', array('Snidely', 'with'));
+    }
 
-//        $this->registerHelper('each', array($this, 'eachHelper'));
+    public function comment($node, $indent) {
+        $comment = preg_replace('`([\n\r\b]+\s*)`', "\n".$this->indent($indent).'// ', $node[Tokenizer::NAME]);
+
+        $result = $this->str().$this->php(true, $indent)
+                . '// '.$comment."\n";
+
+        return $result;
     }
 
     public function compile($nodes) {
-        $this->snidely->registerHelper('each', array('Snidely', 'each'));
-        $this->snidely->registerHelper('with', array('Snidely', 'with'));
-
-        $nodes = $this->stripStandalone($nodes);
-
         $result = $this->php(true)
                 . "return function(\$context, \$root = null) use (\$snidely) {\n"
                 . $this->indent(1).'if ($root === null) $root = $context;'."\n\n"
@@ -280,7 +290,7 @@ class PhpCompiler extends Compiler {
                     $result .= $this->str('htmlspecialchars(' . $call . ')', $indent);
                     break;
                 case Tokenizer::T_UNESCAPED:
-                case Tokenizer::T_UNESCAPED2:
+                case Tokenizer::T_UNESCAPED_2:
                     $result .= $this->str($call, $indent);
                     break;
                 default;
@@ -296,9 +306,12 @@ class PhpCompiler extends Compiler {
     }
 
     public function inverted($node, $indent) {
-        $node[Tokenizer::ARGS] = array_merge($node[Tokenizer::ARGS], $node[Tokenizer::ARGS]);
+        $result = $this->str()."\n"
+                . $this->getSnidely($node, $indent);
 
-        return $this->unlessHelper($node, $indent);
+        $node[Tokenizer::ARGS] = array_merge($node[Tokenizer::ARGS], $node[Tokenizer::ARGS]);
+        $result .= $this->_ifHelper($node, $indent, '!');
+        return $result;
     }
 
     protected function ifHelper($node, $indent) {
@@ -340,7 +353,14 @@ class PhpCompiler extends Compiler {
     }
 
     public function partial($node, $indent) {
-        $result = $this->str().$this->php(true);
+        $result = '';
+
+        // First render out an indent if one exists.
+        if (isset($node[Tokenizer::INDENT])) {
+            $result .= $this->str(var_export($node[Tokenizer::INDENT], true), $indent);
+        }
+
+        $result .= $this->str().$this->php(true);
 
         $name = $node[Tokenizer::NAME];
 

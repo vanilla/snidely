@@ -1,35 +1,14 @@
 <?php
-
 /**
- * This file is part of Handlebars-php
- * Base on mustache-php https://github.com/bobthecow/mustache.php
- * re-write to use with handlebars
- *
- * PHP version 5.3
- *
- * @category  Xamin
- * @package   Handlebars
- * @author    fzerorubigd <fzerorubigd@gmail.com>
- * @copyright 2012 (c) ParsPooyesh Co
- * @license   GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html>
- * @version   GIT: $Id$
- * @link      http://xamin.ir
+ * @author Todd Burry <todd@vanillaforums.com>
+ * @copyright 2010 Justin Hileman
+ * @copyright Modifications are Copyright (c) 2013-2014 Vanilla Forums Inc.
+ * @license MIT
+ * @package Snidely
+ * @link https://github.com/bobthecow/mustache.php/blob/master/src/Mustache/Parser.php Original file.
  */
 
 namespace Snidely;
-
-/**
- * Handlebars parser (infact its a mustache parser)
- * This class is responsible for turning raw template source into a set of Mustache tokens.
- *
- * @category  Xamin
- * @package   Handlebars
- * @author    fzerorubigd <fzerorubigd@gmail.com>
- * @copyright 2012 (c) ParsPooyesh Co
- * @license   GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html>
- * @version   Release: @package_version@
- * @link      http://xamin.ir
- */
 
 /**
  * Mustache Parser class.
@@ -103,7 +82,7 @@ class Parser {
     /**
      * Helper method for recursively building a parse tree.
      *
-     * @throws Exception_SyntaxException when nesting errors or mismatched section tags are encountered.
+     * @throws SyntaxException when nesting errors or mismatched section tags are encountered.
      *
      * @param array &$tokens Set of Mustache tokens
      * @param array  $parent Parent token (default: null)
@@ -139,21 +118,40 @@ class Parser {
                 case Tokenizer::T_END_SECTION:
                     if (!isset($parent)) {
                         $msg = sprintf('Unexpected closing tag: /%s', $token[Tokenizer::NAME]);
-                        throw new Exception_SyntaxException($msg, $token);
+                        throw new SyntaxException($msg, $token);
                     }
 
                     if ($token[Tokenizer::NAME] !== $parent[Tokenizer::NAME]) {
                         $msg = sprintf('Nesting error: %s vs. %s', $parent[Tokenizer::NAME], $token[Tokenizer::NAME]);
-                        throw new Exception_SyntaxException($msg, $token);
+                        throw new SyntaxException($msg, $token);
                     }
 
                     $this->clearStandaloneLines($nodes, $tokens);
                     $parent[Tokenizer::END]   = $token[Tokenizer::INDEX];
-                    $parent[Tokenizer::NODES] = $nodes;
+
+                    if (array_key_exists(Tokenizer::INVERSE, $parent)) {
+                        $parent[Tokenizer::INVERSE] = $nodes;
+                    } else {
+                        $parent[Tokenizer::NODES] = $nodes;
+                    }
 
                     return $parent;
                     break;
+                case Tokenizer::T_ELSE:
+                    if (!isset($parent)) {
+                        $msg = sprintf('Unexpected else tag: /%s', $token[Tokenizer::NAME]);
+                        throw new SyntaxException($msg, $token);
+                    }
 
+                    $this->clearStandaloneLines($nodes, $tokens);
+
+                    // The else will end off the current nodes.
+                    $parent[Tokenizer::NODES] = $nodes;
+                    // Set up the inverse.
+                    $parent[Tokenizer::INVERSE] = null;
+                    $nodes = array();
+
+                    break;
                 case Tokenizer::T_PARTIAL:
                 case Tokenizer::T_PARTIAL_2:
                     // store the whitespace prefix for laters!
@@ -168,7 +166,6 @@ class Parser {
                     $this->clearStandaloneLines($nodes, $tokens);
                     $nodes[] = $token;
                     break;
-
                 default:
                     $nodes[] = $token;
                     break;
@@ -177,7 +174,7 @@ class Parser {
 
         if (isset($parent)) {
             $msg = sprintf('Missing closing tag: %s', $parent[Tokenizer::NAME]);
-            throw new Exception_SyntaxException($msg, $parent);
+            throw new SyntaxException($msg, $parent);
         }
 
         return $nodes;

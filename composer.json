@@ -1,0 +1,18 @@
+{
+   "name": "vanillaforums/snidely",
+   "type": "library",
+   "description": "A handlebars.js like templating engine optimized for php.",
+   "keywords": ["php", "handlebars", "mustache"],
+   "license": "MIT",
+   "authors": [
+       { "name": "Todd Burry", "email": "todd@vanillaforums.com", "role": "Developer" }
+   ],
+   "autoload": {
+      "psr-0": { 
+          "Snidely": "."
+          }
+   },
+   "require": {
+       "php": ">=5.3.0"
+   }
+}

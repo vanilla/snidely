@@ -1,4 +1,11 @@
 <?php
+/**
+ * @author Todd Burry <todd@vanillaforums.com>
+ * @copyright 2013-2014 Vanilla Forums Inc.
+ * @license MIT
+ * @package Snidely
+ */
+
 namespace Snidely;
 
 class Snidely {
@@ -45,7 +52,9 @@ class Snidely {
 
         $path = $this->cachePath."$key.php";
         if (true || !file_exists($path)) {
-            $php = "<?php\n".$this->precompile($template);
+            $php = "<?php\n"
+                 ."/*\n".$template."\n*/\n"
+                 . $this->precompile($template);
             $this->file_put_contents_atomic($path, $php, $this->cacheFileMode);
         }
 
@@ -54,9 +63,7 @@ class Snidely {
 
     public function precompile($template) {
         $nodes = $this->parse($template);
-
-        $compiler = new PhpCompiler();
-        $compiler->snidely = $this;
+        $compiler = new PhpCompiler($this);
 
         return $compiler->compile($nodes);
     }
@@ -94,6 +101,28 @@ class Snidely {
                 call_user_func($options['fn'], $value, $options, $key);
             }
         }
+    }
+
+    /**
+     * Render a compiled template and return the resulting string.
+     * @param callable $compiled_template
+     * @param array $data
+     * @return string
+     */
+    public function fetch(callable $compiled_template, array $data) {
+        $this->pushErrorReporting();
+
+        try {
+            ob_start();
+            $compiled_template($data);
+            $result = ob_get_clean();
+        } catch(Exception $ex) {
+            $result = ob_get_clean();
+        }
+
+        $this->popErrorReporting();
+
+        return $result;
     }
 
     protected function file_put_contents_atomic($filename, $content, $mode = 0644) {
@@ -134,8 +163,6 @@ class Snidely {
     public function partial($name, $context, $root) {
         if (isset($this->partials[$name])) {
             call_user_func($this->partials[$name], $context, $root);
-        } else {
-            echo "\n<!-- Could not find partial $name -->\n";
         }
     }
 
@@ -148,7 +175,7 @@ class Snidely {
 
     public function pushErrorReporting() {
         if ($this->pushedErrorReporting === null) {
-            $this->pushedErrorReporting = error_reporting(error_reporting() & ~E_NOTICE);
+            $this->pushedErrorReporting = error_reporting(error_reporting() & ~E_NOTICE & ~E_WARNING);
         }
     }
 

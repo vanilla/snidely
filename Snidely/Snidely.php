@@ -19,7 +19,7 @@ class Snidely {
     /**
      * @var string The location of cached compiled templates.
      */
-    public $cachePath;
+    protected $cachePath;
 
     /**
      * @var array An array of helper functions for the template.
@@ -39,7 +39,13 @@ class Snidely {
     /// Methods ///
 
     public function __construct() {
-        $this->cachePath = __DIR__ . '/../cache/';
+        $this->cachePath(__DIR__ . '/../cache');
+    }
+
+    public function cachePath($value = null) {
+        if ($value !== null)
+            $this->cachePath = rtrim($value, DIRECTORY_SEPARATOR);
+        return $this->cachePath;
     }
 
     /**
@@ -50,7 +56,7 @@ class Snidely {
         if ($key === null)
             $key = md5($template);
 
-        $path = $this->cachePath."$key.php";
+        $path = $this->cachePath()."/$key.php";
         if (true || !file_exists($path)) {
             $php = "<?php\n"
                  ."/*\n".$template."\n*/\n"

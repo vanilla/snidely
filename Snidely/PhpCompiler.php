@@ -198,6 +198,13 @@ class PhpCompiler extends Compiler {
             return null;
     }
 
+    /**
+     *
+     * @param array $node
+     * @param type $indent
+     * @param type $helper
+     * @return string|null
+     */
     public function helper($node, $indent, $helper) {
         $result = $this->str().$this->php(true, $indent);
 
@@ -215,6 +222,7 @@ class PhpCompiler extends Compiler {
                 // This is a static method call.
                 $call = "{$helper[0]}::{$helper[1]}(";
             }
+
             if (is_callable($helper)) {
                 $rfunction = new \ReflectionMethod($helper[0], $helper[1]);
                 $params = $rfunction->getParameters();
@@ -223,7 +231,7 @@ class PhpCompiler extends Compiler {
 
         if (!isset($call)) {
             // There is no nice call so we just need to call it at runtime.
-            $call = 'call_user_func_array($helpers[' . var_export($helper, true) . '], ';
+            $call = 'call_user_func($snidely->helpers[' . var_export($node[Tokenizer::NAME], true) . '], ';
         }
 
         // Try and reflect the arguments out of the

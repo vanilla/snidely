@@ -43,11 +43,7 @@ class MustacheSpecTest extends PHPUnit_Framework_TestCase {
         $sort_key = strtolower($basename.'-'.sprintf('%02d', $number).'-'.$name);
         $fn = $snidely->compile($spec['template'], $sort_key);
 
-        ob_start();
-        $snidely->pushErrorReporting();
-        $fn($spec['data']);
-        $snidely->popErrorReporting();
-        $result = ob_get_clean();
+        $result = $snidely->fetch($fn, $spec['data']);
 
         $this->assertEquals($spec['expected'], $result, $spec['desc']);
     }

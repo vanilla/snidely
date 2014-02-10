@@ -21,8 +21,8 @@ class PhpCompiler extends Compiler {
         $this->snidely = $snidely;
         $this->registerCompileHelper('if', [$this, 'ifHelper']);
         $this->registerCompileHelper('unless', [$this, 'unlessHelper']);
-        $this->snidely->registerHelper('each', ['Snidely', 'each']);
-        $this->snidely->registerHelper('with', ['Snidely', 'with']);
+        $this->snidely->registerHelper('each', ['\Snidely\Snidely', 'each']);
+        $this->snidely->registerHelper('with', ['\Snidely\Snidely', 'with']);
     }
 
     public function comment($node, $indent) {
@@ -57,27 +57,6 @@ class PhpCompiler extends Compiler {
     }
 
     public static function each($context, $options) {
-    }
-
-    protected function eachHelper($node, $indent) {
-        if (empty($node[Tokenizer::INVERSE])) {
-            $result = $this->foreachHelper($node);
-        } else {
-            $result = $this->php(true);
-            $context = $this->getContext($node, 1);
-
-            $result .= "if(!empty($context) && is_array($context)):";
-
-            $result .= $this->foreachHelper($node, $indent + 1);
-
-            $result .= $this->php(true) . "\nelse:\n";
-
-            $result .= $this->compileNodes($node[Tokenizer::INVERSE], $indent + 1);
-
-            $result .= $this->php(true) . "\nendif;\n";
-        }
-
-        return $result;
     }
 
     public function str($str = null, $indent = 0) {
@@ -467,22 +446,22 @@ class PhpCompiler extends Compiler {
         return $result;
     }
 
-    protected function withHelper($node) {
-        $result = $this->php(true);
-        $context = $this->getContext($node, 1);
-
-        // Push the context.
-        $result .= "\narray_push(\$contexts, \$context);\n" .
-                "\$context = $context;\n";
-
-        $this->indent++;
-        $result .= $this->compileNodes($node[Tokenizer::NODES]);
-        $this->indent--;
-
-        $result .= $this->php(true) .
-                '$context = array_pop($contexts);' . "\n";
-
-        return $result;
-    }
+//    protected function withHelper($node) {
+//        $result = $this->php(true);
+//        $context = $this->getContext($node, 1);
+//
+//        // Push the context.
+//        $result .= "\narray_push(\$contexts, \$context);\n" .
+//                "\$context = $context;\n";
+//
+//        $this->indent++;
+//        $result .= $this->compileNodes($node[Tokenizer::NODES]);
+//        $this->indent--;
+//
+//        $result .= $this->php(true) .
+//                '$context = array_pop($contexts);' . "\n";
+//
+//        return $result;
+//    }
 
 }

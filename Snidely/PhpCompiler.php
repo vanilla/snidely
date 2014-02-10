@@ -36,8 +36,8 @@ class PhpCompiler extends Compiler {
 
     public function compile($nodes) {
         $result = $this->php(true)
-                . "return function(\$context) use (\$snidely) {\n"
-                . $this->indent(1).'$scopes = new Scopes($context);'."\n\n"
+                . "return function(\$context, \$snidely) {\n"
+                . $this->indent(1).'$scope = new Scope($context);'."\n\n"
                 . $this->compileClosure($nodes, 0, false)
                 . $this->str().$this->php(true)."};\n";
 
@@ -48,7 +48,7 @@ class PhpCompiler extends Compiler {
         $result = $this->php(true);
 
         if ($declaration)
-            $result .= "function(\$context, \$scopes, \$key = null) use (\$snidely) {\n";
+            $result .= "function(\$context, \$scope, \$key = null) use (\$snidely) {\n";
         $result .= $this->compileNodes($nodes, $indent + 1);
         if ($declaration)
             $result .= $this->str().$this->php(true, $indent) . '}';
@@ -111,7 +111,7 @@ class PhpCompiler extends Compiler {
         if (isset($path[Tokenizer::ARGS]))
             $path = $path[Tokenizer::ARGS][$i];
 
-        $var = '$scopes';
+        $var = '$scope';
         $paren = ['[', ']'];
         $first = true;
         $result = '';
@@ -130,19 +130,25 @@ class PhpCompiler extends Compiler {
                         if ($value === '.') {
                             $var = '$context';
                         } elseif ($value === '..') {
-                            $var = '$scopes->root';
+                            $var = '$scope->root';
                             $paren = ['(', ')'];
                         }
                     }
 
                     break;
                 case Tokenizer::T_VAR:
-                    if (in_array($value, array('@key', '@index'))) {
+                    if ($first && $value === 'this') {
+                        // this is a synonym for "."
+                        $var = '$context';
+                    } elseif (in_array($value, array('@key', '@index', '@first', '@last'))) {
                         // These are special variables that refer to the index of a loop.
                         if (count($path) == 1) {
-                            return '$key';
+                            $value = substr($value, 1);
+                            $var = '$scope->data';
+
+                            $result .= '(' . var_export($value, true) . ')';
                         } else {
-                            $result .= '[$key]';
+                            $result .= '[0]'; // should be an error
                         }
                     } else {
                         $result .= $paren[0] . var_export($value, true) . $paren[1];
@@ -219,6 +225,7 @@ class PhpCompiler extends Compiler {
      */
     public function helper($node, $indent, $helper) {
         $result = $this->str().$this->php(true, $indent);
+        $params = null;
 
         // Try and make the helper call nice.
         if (is_string($helper)) {
@@ -274,8 +281,8 @@ class PhpCompiler extends Compiler {
 
                     // Unset the argument from the hash so that it doesn't also come in the options.
                     unset($node[Tokenizer::HASH][$param_name]);
-                } elseif (in_array(strtolower($param_name), array('context', 'scopes', 'snidely'))) {
-                    // This argument takes the current context or the scopes.
+                } elseif (in_array(strtolower($param_name), array('context', 'scope', 'snidely'))) {
+                    // This argument takes the current context or the scope.
                     $args[$i] = '$'.strtolower($param_name);
                 } elseif (strtolower($param_name) === 'options') {
                     $args[$i] = $this->getOptions($node, $indent, true);
@@ -388,7 +395,7 @@ class PhpCompiler extends Compiler {
                 . $this->getSnidely($node, $indent)."\n"
                 . $this->indent($indent).'$snidely->partial('
                 . var_export($name, true)
-                . ", \$context, \$scopes);\n\n";
+                . ", \$context, \$scope);\n\n";
 
         return $result;
     }
@@ -418,7 +425,7 @@ class PhpCompiler extends Compiler {
 
         $result .= "\n"
                 . $this->getSnidely($node, $indent)."\n"
-                . $this->indent($indent)."\Snidely\Snidely::section($context, \$scopes, $options);\n\n";
+                . $this->indent($indent)."\Snidely\Snidely::section($context, \$scope, $options);\n\n";
         return $result;
 
         $result .= "if (!empty($context)):\n" .

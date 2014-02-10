@@ -80,33 +80,53 @@ class Snidely {
      * @param array $context
      * @param array $options
      */
-    public static function each($context, $options) {
+    public static function each($context, Scope $scope, $options) {
         if (empty($context)) {
             // The context is empty so display the inverse template.
             if (isset($options['inverse'])) {
-                call_user_func($options['inverse'], $context, $options);
+                call_user_func($options['inverse'], $context, $scope, $options);
             }
         } elseif (is_array($context)) {
-            // Get the item seperator if any.
+            // Get the item separator if any.
             if (isset($options['hash']['sep'])) {
                 $sep = $options['hash']['sep'];
             } else {
                 $sep = '';
             }
 
+            // Push a placeholder for the value.
+//            $scope->push();
+            $scope = new Scope($context);
+            $scope->pushData();
+
+            $i = 0;
+            $count = count($context);
+
             // Loop through the context and call the template on each one.
             $first = true;
             foreach ($context as $key => $value) {
+                $scope->replace($value);
+                $scope->replaceData([
+                        'index' => $i,
+                        'key' => $key,
+                        'first' => $first,
+                        'last' => $i === $count - 1
+                        ]);
+
                 // Echo the seperator between the items.
-                if ($first) {
+                if ($first === true) {
                     $first = false;
                 } else {
                     echo $sep;
                 }
 
                 // Call the item template.
-                call_user_func($options['fn'], $value, $options, $key);
+                call_user_func($options['fn'], $value, $scope, $options, $key);
+                $i++;
             }
+
+//            $scope->pop();
+            $scope->popData();
         }
     }
 
@@ -167,9 +187,9 @@ class Snidely {
         return $nodes;
     }
 
-    public function partial($name, $context, $root) {
+    public function partial($name, $context, $scope) {
         if (isset($this->partials[$name])) {
-            call_user_func($this->partials[$name], $context, $root);
+            call_user_func($this->partials[$name], $context, $this);
         }
     }
 
@@ -212,34 +232,63 @@ class Snidely {
      * @param array $context
      * @param array $options
      */
-    public static function section($context, Scopes $scopes, $options) {
-        $scopes->push($context);
+    public static function section($context, Scope $scope, $options) {
+
 
         if (empty($context)) {
             return;
-        } elseif (is_array($context) && isset($context[0])) {
-            // Push a placeholder for the loop.
-            $scopes->push([]);
+        } elseif (is_array($context)) {
+            if (isset($context[0])) {
+                // This is a numeric array and is looped.
 
-            foreach ($context as $key => $context_row) {
-                $scopes->replace($context_row);
+                // Push a placeholder for the loop.
+                $scope->push([]);
+                $scope->pushData();
 
-                $fn = $options['fn'];
-                $fn($context_row, $scopes, $key);
-                //         call_user_func($options['fn'], $context_row, $key);
+                $i = 0;
+                $count = count($context);
+
+                foreach ($context as $key => $context_row) {
+                    $scope->replace($context_row);
+                    $scope->replaceData([
+                        'index' => $i,
+                        'key' => $key,
+                        'first' => $i === 0,
+                        'last' => $i === $count - 1
+                        ]);
+
+
+                    $fn = $options['fn'];
+                    $fn($context_row, $scope, $key);
+
+                    $i++;
+                }
+
+                $scope->pop();
+                $scope->popData();
+            } else {
+                // This is an object-like array and is like a with.
+                $scope->push($context);
+                $options['fn']($context, $scope);
+                $scope->pop();
             }
-
-            $scopes->pop();
         } else {
-            $options['fn']($context, $scopes);
+            // This is an atomic value and is like an if (true).
+            $options['fn']($context, $scope);
         }
-
-        $scopes->pop();
     }
 
-    public static function with($context, $options) {
+    public static function with($context, Scope $scope, $options) {
+        if (empty($context))
+            return;
+
+//        $scope->push($context);
+        $scope = new Scope($context);
+
         $fn = $options['fn'];
-        $fn($context, $options);
+        $fn($context, $scope, $options);
+
+//        $scope->pop();
     }
 }
 

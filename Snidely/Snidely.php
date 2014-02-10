@@ -141,9 +141,9 @@ class Snidely {
 
         try {
             ob_start();
-            $compiled_template($data);
+            $compiled_template($data, $this);
             $result = ob_get_clean();
-        } catch(Exception $ex) {
+        } catch(\Exception $ex) {
             $result = ob_get_clean();
         }
 

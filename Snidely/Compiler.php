@@ -29,9 +29,7 @@ abstract class Compiler {
 
     /// Methods ///
 
-    public function compile($nodes) {
-        return $this->compileNodes($nodes);
-    }
+    public abstract function compile($nodes);
 
     protected function compileNodes($nodes, $indent = 0) {
         $result = '';
@@ -96,7 +94,7 @@ abstract class Compiler {
     }
 
     public function escaped($node, $indent) {
-        return $this->uknown($node, $indent);
+        return $this->unknown($node, $indent);
     }
 
     protected function getSnidely($node, $indent, $comment = true) {
@@ -192,80 +190,6 @@ abstract class Compiler {
 
     public function section($node, $indent) {
         return $this->unknown($node, $indent);
-    }
-
-    /**
-     * Strip the text nodes around comments.
-     *
-     * @param type $nodes
-     */
-    protected function stripStandalone($nodes, $edges = false) {
-        return $nodes;
-        $unset = array();
-
-        if ($edges && count($nodes) > 0) {
-            // Trim an empty line at the beginning.
-            if (isset($nodes[0])
-                && $nodes[0][Tokenizer::TYPE] === Tokenizer::T_TEXT
-                && substr($nodes[0][Tokenizer::VALUE], -1) === "\n"
-                && trim($nodes[0][Tokenizer::VALUE]) === '') {
-
-                $unset[0] = true;
-            }
-
-            // Trim empty leading space at the end.
-            $l = count($nodes) - 1;
-            if ($nodes[$l][Tokenizer::TYPE] === Tokenizer::T_TEXT
-                && substr($nodes[$l][Tokenizer::VALUE], -1) !== "\n"
-                && trim($nodes[$l][Tokenizer::VALUE]) === '') {
-
-                $unset[$l] = true;
-            }
-        }
-
-        // Loop through the nodes and figure out which comments to strip.
-        foreach ($nodes as $i => &$node) {
-            if (in_array($node[Tokenizer::TYPE], array(Tokenizer::T_COMMENT, Tokenizer::T_SECTION, Tokenizer::T_INVERTED, Tokenizer::T_DELIM_CHANGE ))) {
-                // Strip empty text before the comment.
-                $j = $i - 1;
-                if (isset($nodes[$j])) {
-                    if ($nodes[$j][Tokenizer::TYPE] === Tokenizer::T_TEXT) {
-                        $value = $nodes[$j][Tokenizer::VALUE];
-                        if (substr($value, -1) !== "\n") {
-                            if (trim($value) === '') {
-                                // Remove empty lines.
-                                $unset[$j] = true;
-                            } else {
-                                // This is an inline comment. Don't trim.
-                                continue;
-                            }
-                        }
-                    }
-                }
-                // Strip empty text after the comment.
-                $h = $i + 1;
-                if (isset($nodes[$h])) {
-                    if ($nodes[$h][Tokenizer::TYPE] === Tokenizer::T_TEXT) {
-                        $value = $nodes[$h][Tokenizer::VALUE];
-                        if (substr($value, -1) === "\n" && trim($value) === '') {
-                            // Remove empty lines.
-                            $unset[$h] = true;
-                        }
-                    } else {
-                        unset($unset[$j]);
-                    }
-                }
-            }
-
-            if (isset($node[Tokenizer::NODES]) && is_array($node[Tokenizer::NODES])) {
-                $node[Tokenizer::NODES] = $this->stripStandalone($node[Tokenizer::NODES], true);
-            }
-        }
-        // Now that we've gathered the unset indexes unset the nodes.
-        foreach ($unset as $i => $v) {
-            unset($nodes[$i]);
-        }
-        return array_values($nodes);
     }
 
     public function text($node, $indent) {

@@ -6,12 +6,12 @@ use Symfony\Component\Yaml\Yaml;
 
 class MustacheSpecTest extends PHPUnit_Framework_TestCase {
     public $skip = array(
-        'delimiters-sections' => 'Snidely does not support context stack traversal.',
+//        'delimiters-sections' => 'Snidely does not support context stack traversal.',
         'partials-standalone-without-previous-line' => "Snidely doesn't indent partials.",
         'partials-standalone-without-newline' => "Snidely doesn't indent partials.",
         'partials-standalone-indentation' => "Snidely doesn't indent partials.",
-        'sections-deeply-nested-contexts' => 'Snidely does not support context stack traversal.',
-        'sections-nested-truthy' => 'Snidely does not support context stack traversal.',
+//        'sections-deeply-nested-contexts' => 'Snidely does not support context stack traversal.',
+//        'sections-nested-truthy' => 'Snidely does not support context stack traversal.',
         );
 
     protected function runSpec($basename, $number, $spec) {

@@ -59,6 +59,7 @@ class Snidely {
         $path = $this->cachePath()."/$key.php";
         if (true || !file_exists($path)) {
             $php = "<?php\n"
+                 ."namespace Snidely;\n"
                  ."/*\n".$template."\n*/\n"
                  . $this->precompile($template);
             $this->file_put_contents_atomic($path, $php, $this->cacheFileMode);
@@ -211,18 +212,29 @@ class Snidely {
      * @param array $context
      * @param array $options
      */
-    public static function section($context, $root, $options) {
+    public static function section($context, Scopes $scopes, $options) {
+        $scopes->push($context);
+
         if (empty($context)) {
             return;
         } elseif (is_array($context) && isset($context[0])) {
+            // Push a placeholder for the loop.
+            $scopes->push([]);
+
             foreach ($context as $key => $context_row) {
+                $scopes->replace($context_row);
+
                 $fn = $options['fn'];
-                $fn($context_row, $root, $key);
+                $fn($context_row, $scopes, $key);
                 //         call_user_func($options['fn'], $context_row, $key);
             }
+
+            $scopes->pop();
         } else {
-            $options['fn']($context, $root);
+            $options['fn']($context, $scopes);
         }
+
+        $scopes->pop();
     }
 
     public static function with($context, $options) {

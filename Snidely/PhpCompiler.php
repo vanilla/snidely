@@ -19,10 +19,10 @@ class PhpCompiler extends Compiler {
 
     public function __construct($snidely) {
         $this->snidely = $snidely;
-        $this->registerCompileHelper('if', array($this, 'ifHelper'));
-        $this->registerCompileHelper('unless', array($this, 'unlessHelper'));
-        $this->snidely->registerHelper('each', array('Snidely', 'each'));
-        $this->snidely->registerHelper('with', array('Snidely', 'with'));
+        $this->registerCompileHelper('if', [$this, 'ifHelper']);
+        $this->registerCompileHelper('unless', [$this, 'unlessHelper']);
+        $this->snidely->registerHelper('each', ['Snidely', 'each']);
+        $this->snidely->registerHelper('with', ['Snidely', 'with']);
     }
 
     public function comment($node, $indent) {
@@ -112,7 +112,7 @@ class PhpCompiler extends Compiler {
             $path = $path[Tokenizer::ARGS][$i];
 
         $var = '$scopes';
-        $paren = array('[', ']');
+        $paren = ['[', ']'];
         $first = true;
         $result = '';
 
@@ -172,7 +172,7 @@ class PhpCompiler extends Compiler {
     protected function getOptions($node, $indent, $force = false) {
         $this->php(true);
 
-        $options = array();
+        $options = [];
 
         // First add the hash to the table.
         if (isset($node[Tokenizer::HASH])) {
@@ -198,14 +198,14 @@ class PhpCompiler extends Compiler {
                 foreach ($value as $hkey => &$hval) {
                     $hval = var_export($hkey, true) . ' => ' .$hval;
                 }
-                $value = var_export($key, true) . ' => array(' . implode(', ', $value).')';
+                $value = var_export($key, true) . ' => [' . implode(', ', $value).']';
             } else {
                 $value = var_export($key, true) . ' => ' . $value;
             }
         }
 
         if ($force || !empty($options))
-            return 'array(' . implode(', ', $options) . ')';
+            return '[' . implode(', ', $options) . ']';
         else
             return null;
     }
@@ -247,14 +247,14 @@ class PhpCompiler extends Compiler {
         }
 
         // Try and reflect the arguments out of the
-        $node_args = array();
+        $node_args = [];
         if (isset($node[Tokenizer::ARGS])) {
             $node_args = $node[Tokenizer::ARGS];
             array_shift($node_args);
         }
 
         // Add all of the parameters to the call.
-        $args = array();
+        $args = [];
         $options_passed = false;
         if (isset($params)) {
             // Use reflection to assign the parameters properly.

@@ -24,12 +24,12 @@ class Snidely {
     /**
      * @var array An array of helper functions for the template.
      */
-    public $helpers = array();
+    public $helpers = [];
 
     /**
      * @var array An array of partials for the template.
      */
-    protected $partials = array();
+    protected $partials = [];
 
     /**
      * @var int The pushed error reporting.

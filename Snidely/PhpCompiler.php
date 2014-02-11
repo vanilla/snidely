@@ -56,9 +56,6 @@ class PhpCompiler extends Compiler {
         return $result;
     }
 
-    public static function each($context, $options) {
-    }
-
     public function str($str = null, $indent = 0) {
         if ($str === null) {
             if ($this->str) {
@@ -405,30 +402,15 @@ class PhpCompiler extends Compiler {
                 . $this->getSnidely($node, $indent)."\n"
                 . $this->indent($indent)."\Snidely\Snidely::section($context, \$scope, $options);\n\n";
         return $result;
-
-        $result .= "if (!empty($context)):\n" .
-                "array_push(\$context, \$contexts);\n" .
-                "\$section_context = $context;\n";
-
-        $this->indent++;
     }
 
     public function text($node, $indent) {
         return $this->php(true).
                $this->str($this->literalText($node[Tokenizer::VALUE]), $indent);
-
-//      return $this->php(false).$node[Tokenizer::VALUE];
     }
 
     public function unknown($node, $indent) {
         throw new \Exception("Unknown node type {$node['type']}", 500);
-
-        $text = "\n<pre><b>unknown node type: {$node['type']}</b>\n" .
-                json_encode($node, JSON_PRETTY_PRINT) .
-                "</pre>\n";
-
-        $result = $this->php(true, $indent) . 'echo ' . var_export($text, true) . ";\n";
-        return $result;
     }
 
     public function unescaped($node, $indent) {
@@ -444,23 +426,4 @@ class PhpCompiler extends Compiler {
                 . $this->_ifHelper($node, $indent, '!');
         return $result;
     }
-
-//    protected function withHelper($node) {
-//        $result = $this->php(true);
-//        $context = $this->getContext($node, 1);
-//
-//        // Push the context.
-//        $result .= "\narray_push(\$contexts, \$context);\n" .
-//                "\$context = $context;\n";
-//
-//        $this->indent++;
-//        $result .= $this->compileNodes($node[Tokenizer::NODES]);
-//        $this->indent--;
-//
-//        $result .= $this->php(true) .
-//                '$context = array_pop($contexts);' . "\n";
-//
-//        return $result;
-//    }
-
 }

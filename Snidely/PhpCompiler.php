@@ -110,7 +110,6 @@ class PhpCompiler extends Compiler {
                             $var = '$context';
                         } elseif ($value === '..') {
                             $var = '$scope->root';
-                            $paren = ['(', ')'];
                         }
                     }
 
@@ -140,7 +139,6 @@ class PhpCompiler extends Compiler {
             }
 
             $first = false;
-            $paren = ['[', ']'];
         }
 
         return $var . $result;
@@ -204,6 +202,7 @@ class PhpCompiler extends Compiler {
      */
     public function helper($node, $indent, $helper) {
         $result = $this->str().$this->php(true, $indent);
+        $call = null;
         $params = null;
 
         // Try and make the helper call nice.
@@ -272,7 +271,7 @@ class PhpCompiler extends Compiler {
                 }
             }
             // Add any additional arguments that were passed.
-            for ($i = $i; $i < count($node_args); $i++) {
+            for ($i = 0; $i < count($node_args); $i++) {
                 $args[$i] = $this->getContext($node_args[$i]);
             }
             // Add the options.

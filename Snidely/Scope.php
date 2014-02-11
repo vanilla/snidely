@@ -22,13 +22,25 @@ class Scope implements \ArrayAccess {
      */
     protected $dataStack;
 
+    /**
+     * @var array
+     */
+    public $root;
+
+
     /// Methods ///
 
-    public function __construct($initial = null) {
-        if ($initial === null) {
-            $this->contextStack = [];
+    public function __construct($context = null, $root = null) {
+        if ($context === null) {
+            $this->contextStack = [[]];
         } else {
-            $this->contextStack = [$initial];
+            $this->contextStack = [$context];
+        }
+
+        if ($root === null) {
+            $this->root = reset($this->contextStack);
+        } else {
+            $this->root = $root;
         }
 
         $this->dataStack = [];
@@ -64,17 +76,22 @@ class Scope implements \ArrayAccess {
 
             if (array_key_exists($offset, $item))
                 return $item[$offset];
+
         }
         return null;
     }
 
     public function offsetSet($offset, $value) {
+        // Try finding the offset to update its value.
         for ($i = count($this->contextStack) - 1; $i >= 0; $i--) {
-            $item =& $this->contextStack[$i];
-
-            $item[$offset] = $value;
-            break;
+            if (array_key_exists($offset, $this->contextStack[$i])) {
+                $this->contextStack[$i][$offset] = $value;
+                return;
+            }
         }
+
+        // The offset didn't exist so just set the top of the stack.
+        $this->contextStack[count($this->contextStack) - 1][$offset] = $value;
     }
 
     public function offsetUnset($offset) {
@@ -117,9 +134,9 @@ class Scope implements \ArrayAccess {
     }
 
     public function root($name) {
-        if (!isset($this->contextStack[0][$name]))
+        if (!isset($this->root[$name]))
             return null;
-        return $this->contextStack[0][$name];
+        return $this->root[$name];
     }
 
 //    public static function wrap(&$array) {

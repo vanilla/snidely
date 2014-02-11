@@ -95,8 +95,7 @@ class Snidely {
             }
 
             // Push a placeholder for the value.
-//            $scope->push();
-            $scope = new Scope($context);
+            $scope = new Scope($context, $scope->root);
             $scope->pushData();
 
             $i = 0;
@@ -113,7 +112,7 @@ class Snidely {
                         'last' => $i === $count - 1
                         ]);
 
-                // Echo the seperator between the items.
+                // Echo the separator between the items.
                 if ($first === true) {
                     $first = false;
                 } else {
@@ -121,7 +120,7 @@ class Snidely {
                 }
 
                 // Call the item template.
-                call_user_func($options['fn'], $value, $scope, $options, $key);
+                call_user_func($options['fn'], $scope, $scope, $options, $key);
                 $i++;
             }
 
@@ -233,8 +232,6 @@ class Snidely {
      * @param array $options
      */
     public static function section($context, Scope $scope, $options) {
-
-
         if (empty($context)) {
             return;
         } elseif (is_array($context)) {
@@ -242,7 +239,7 @@ class Snidely {
                 // This is a numeric array and is looped.
 
                 // Push a placeholder for the loop.
-                $scope->push([]);
+                $scope->push();
                 $scope->pushData();
 
                 $i = 0;
@@ -282,13 +279,10 @@ class Snidely {
         if (empty($context))
             return;
 
-//        $scope->push($context);
-        $scope = new Scope($context);
+        $scope = new Scope($context, $scope->root);
 
         $fn = $options['fn'];
         $fn($context, $scope, $options);
-
-//        $scope->pop();
     }
 }
 

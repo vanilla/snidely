@@ -194,7 +194,7 @@ class Parser {
     {
         if ($this->lineTokens > 1) {
             // this is the third or later node on this line, so it can't be standalone
-            return;
+            return null;
         }
 
         $prev = null;
@@ -203,7 +203,7 @@ class Parser {
             // unless the previous node is whitespace.
             if ($prev = end($nodes)) {
                 if (!$this->tokenIsWhitespace($prev)) {
-                    return;
+                    return null;
                 }
             }
         }
@@ -212,19 +212,19 @@ class Parser {
         if ($next = reset($tokens)) {
             // If we're on a new line, bail.
             if ($next[Tokenizer::LINE] !== $this->lineNum) {
-                return;
+                return null;
             }
 
             // If the next token isn't whitespace, bail.
             if (!$this->tokenIsWhitespace($next)) {
-                return;
+                return null;
             }
 
             if (count($tokens) !== 1) {
                 // Unless it's the last token in the template, the next token
                 // must end in newline for this to be standalone.
                 if (substr($next[Tokenizer::VALUE], -1) !== "\n") {
-                    return;
+                    return null;
                 }
             }
 
@@ -236,6 +236,8 @@ class Parser {
             // Return the whitespace prefix, if any
             return array_pop($nodes);
         }
+
+        return null;
     }
 
     /**

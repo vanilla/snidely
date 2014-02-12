@@ -31,7 +31,7 @@ class ArgsTokenizer {
     * @return void
     */
    protected function flushBuffer($type = Tokenizer::T_VAR) {
-      if (!empty($this->buffer)) {
+      if (strlen($this->buffer) > 0) {
          $this->tokens[] = $token = array(Tokenizer::TYPE => $type, Tokenizer::VALUE => $this->buffer);
          $this->buffer = '';
       }
@@ -90,8 +90,22 @@ class ArgsTokenizer {
 
                break;
             case self::IN_DOT:
-               if ($c === Tokenizer::T_SLASH || $c === Tokenizer::T_DOT) {
+               // Treat all whitespace as the same.
+               if (preg_match('`\s`', $c))
+                    $c = Tokenizer::T_SPACE;
+
+               if ($c === Tokenizer::T_DOT) {
                   $this->buffer .= $c;
+               } elseif ($c === Tokenizer::T_SLASH) {
+                  $this->flushBuffer(Tokenizer::T_DOT);
+                  $this->state = self::IN_VAR;
+               } elseif ($c === Tokenizer::T_SPACE) {
+                   $this->buffer = str_replace(Tokenizer::T_SLASH, Tokenizer::T_DOT, substr($this->buffer, 0, -1));
+                   $this->flushBuffer(Tokenizer::T_DOT);
+                   $this->state = self::IN_VAR;
+
+                   // Add the space.
+                   $this->tokens[] = array(Tokenizer::TYPE => Tokenizer::T_SPACE);
                } else {
                   $this->buffer = str_replace(Tokenizer::T_SLASH, Tokenizer::T_DOT, substr($this->buffer, 0, -1));
                   $this->flushBuffer(Tokenizer::T_DOT);
@@ -146,7 +160,7 @@ class ArgsTokenizer {
 
       $map = array(self::IN_STRING => Tokenizer::T_STRING, self::IN_DOT => Tokenizer::T_DOT);
 
-      $this->flushBuffer(key_exists($this->state, $map) ? $map[$this->state] : Tokenizer::T_VAR);
+      $this->flushBuffer(array_key_exists($this->state, $map) ? $map[$this->state] : Tokenizer::T_VAR);
 
       $tokens = $this->tokens;
       $this->reset();

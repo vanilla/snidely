@@ -10,22 +10,26 @@ namespace Snidely;
 
 class PhpCompiler extends Compiler {
 
-    const COMPILE_MUSTACHE_CONTEXT = 0x1;
-    const COMPILE_MUSTACHE_HELPERS = 0x2;
-    const COMPILE_MUSTACHE = 0xF;
+    const MUSTACHE_CONTEXT = 0x1;
+    const MUSTACHE_HELPERS = 0x2;
+    const MUSTACHE = 0xF;
 
-    const COMPILE_HANDLEBARS_SCOPE_IF = 0x10; // whether or not to push the scope on if statements.
-    const COMPILE_HANDLEBARS = 0xF0;
+    const HANDLEBARS_IF = 0x100; // whether or not to push the scope on if statements.
+    const HANDLEBARS_HELPERS = 0x200;
+    const HANDLEBARS_JS_STRINGS = 0x400; // whether or not to return javascript compatible handlebars strings.
+    const HANDLEBARS = 0xF00;
 
     /// Properties ///
 
-    public $flags = 0;
+    protected $flags = 0;
 
     protected $php = true;
     protected $str = false;
 
     protected $helpersClass;
 
+    protected $escapeFormat = 'htmlspecialchars(%s)';
+    protected $unescapeFormat = '%s';
 
     /// Methods ///
 
@@ -33,13 +37,23 @@ class PhpCompiler extends Compiler {
         $this->snidely = $snidely;
         $this->flags = $flags;
 
-        if ($this->flags & self::COMPILE_MUSTACHE_HELPERS)
+        if ($this->flags & self::MUSTACHE_HELPERS) {
             $this->helpersClass = '\Snidely\MustacheHelpers';
-        else
+        } elseif ($this->flags & self::HANDLEBARS_HELPERS) {
+            $this->helpersClass = '\Snidely\HandlebarsHelpers';
+        } else {
             $this->helpersClass = '\Snidely\Helpers';
+        }
 
-        $this->registerCompileHelper('if', [$this, 'ifHelper']);
-        $this->registerCompileHelper('unless', [$this, 'unlessHelper']);
+        if ($this->flags & self::HANDLEBARS_JS_STRINGS) {
+            $this->escapeFormat = 'HandlebarsHelpers::escapeStr(%s)';
+            $this->unescapeFormat = 'HandlebarsHelpers::str(%s)';
+        }
+
+        if (!($this->flags & self::HANDLEBARS_IF)) {
+            $this->registerCompileHelper('if', [$this, 'ifHelper']);
+            $this->registerCompileHelper('unless', [$this, 'unlessHelper']);
+        }
 //        $this->snidely->registerHelper('each', ['\Snidely\Snidely', 'each']);
 //        $this->snidely->registerHelper('with', ['\Snidely\Snidely', 'with']);
 
@@ -57,10 +71,12 @@ class PhpCompiler extends Compiler {
 
     public function compile($nodes) {
         $result = $this->php(true)
+                . "namespace Snidely {\n"
                 . "return function(\$context, \$snidely) {\n"
                 . $this->indent(1).'$scope = new Scope($context);'."\n\n"
                 . $this->compileClosure($nodes, 0, false)
-                . $this->str().$this->php(true)."};\n";
+                . $this->str().$this->php(true)."};\n"
+                ."}\n";
 
         return $result;
     }
@@ -69,7 +85,7 @@ class PhpCompiler extends Compiler {
         $result = $this->php(true);
 
         if ($declaration)
-            $result .= "function(\$context, \$scope, \$key = null) use (\$snidely) {\n";
+            $result .= "function(\$context, \$scope) use (\$snidely) {\n";
         $result .= $this->compileNodes($nodes, $indent + 1);
         if ($declaration)
             $result .= $this->str().$this->php(true, $indent) . '}';
@@ -98,9 +114,8 @@ class PhpCompiler extends Compiler {
         $result = $this->php(true) .
                 $this->indent($indent) .
                 $this->str(
-                    'htmlspecialchars(' .
-                    $this->getContext($node) .
-                    ")", $indent);
+                    sprintf($this->escapeFormat, $this->getContext($node)),
+                    $indent);
 
         return $result;
     }
@@ -109,7 +124,7 @@ class PhpCompiler extends Compiler {
         if (isset($path[Tokenizer::ARGS]))
             $path = $path[Tokenizer::ARGS][$i];
 
-        if ($this->flags & self::COMPILE_MUSTACHE_CONTEXT)
+        if ($this->flags & self::MUSTACHE_CONTEXT)
             $var = '$scope';
         else
             $var = '$context';
@@ -207,7 +222,7 @@ class PhpCompiler extends Compiler {
         // Is there an inverse section.
         if (!empty($node[Tokenizer::INVERSE])) {
             // TODO: This has to be rendered as a closure.
-            $options['inverse'] = $this->compileClosure($node[Tokenizer::NODES], $indent);
+            $options['inverse'] = $this->compileClosure($node[Tokenizer::INVERSE], $indent);
         }
 
         // Put the options into array syntax.
@@ -231,7 +246,7 @@ class PhpCompiler extends Compiler {
     /**
      *
      * @param array $node
-     * @param type $indent
+     * @param int $indent
      * @param type $helper
      * @return string|null
      */
@@ -329,11 +344,11 @@ class PhpCompiler extends Compiler {
         if ($call) {
             switch ($node[Tokenizer::TYPE]) {
                 case Tokenizer::T_ESCAPED:
-                    $result .= $this->str('htmlspecialchars(' . $call . ')', $indent - 1);
+                    $result .= $this->str(sprintf($this->escapeFormat, $call), $indent - 1);
                     break;
                 case Tokenizer::T_UNESCAPED:
                 case Tokenizer::T_UNESCAPED_2:
-                    $result .= $this->str($call, $indent - 1);
+                    $result .= $this->str(sprintf($this->unescapeFormt, $call), $indent - 1);
                     break;
                 default;
                     $result .= "\n"
@@ -370,7 +385,7 @@ class PhpCompiler extends Compiler {
         $result .= "\n";
 
         // Push the context because handlebars does.
-        if ($this->flags & self::COMPILE_HANDLEBARS_SCOPE_IF) {
+        if ($this->flags & self::HANDLEBARS_IF) {
             $result .= $this->indent($indent)."\$scope->push(\$context);\n";
         }
 
@@ -386,7 +401,7 @@ class PhpCompiler extends Compiler {
 
         $result .= $this->str().$this->php(true, $indent)."}\n";
 
-        if ($this->flags & self::COMPILE_HANDLEBARS_SCOPE_IF) {
+        if ($this->flags & self::HANDLEBARS_IF) {
             $result .= $this->indent($indent)."\$scope->pop();\n";
         }
 
@@ -467,7 +482,7 @@ class PhpCompiler extends Compiler {
 
     public function unescaped($node, $indent) {
         $result = $this->php(true, $indent).
-                $this->str($this->getContext($node), $indent);
+                $this->str(sprintf($this->unescapeFormat, $this->getContext($node)), $indent);
 
         return $result;
     }

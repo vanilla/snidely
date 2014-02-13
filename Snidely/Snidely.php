@@ -60,7 +60,7 @@ class Snidely {
 
     /**
      * @param string $template
-     * @param Snidely\Compiler $compiler
+     * @param string $key
      * @return callable Returns a closure that will render the template when called.
      */
     public function compile($template, $key = null) {
@@ -70,7 +70,6 @@ class Snidely {
         $path = $this->cachePath()."/$key.php";
         if (true || !file_exists($path)) {
             $php = "<?php\n"
-                 ."namespace Snidely;\n"
                  ."/*\n".$template."\n*/\n"
                  . $this->precompile($template);
 
@@ -97,10 +96,10 @@ class Snidely {
     /**
      * Render a compiled template and return the resulting string.
      * @param callable $compiled_template
-     * @param array $data
+     * @param mixed $data
      * @return string
      */
-    public function fetch(callable $compiled_template, array $data) {
+    public function fetch(callable $compiled_template, $data) {
         try {
             ob_start();
             $this->pushErrorReporting();

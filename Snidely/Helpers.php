@@ -39,6 +39,7 @@ class Helpers {
 
             $i = 0;
             $count = count($context);
+            $has_key = !isset($context[0]);
 
             // Loop through the context and call the template on each one.
             $first = true;
@@ -46,7 +47,7 @@ class Helpers {
 //                $scope->replace($context_row);
                 $scope->replaceData([
                     'index' => $i,
-                    'key' => $key,
+                    'key' => $has_key ? $key : null,
                     'first' => $first,
                     'last' => $i === $count - 1
                 ]);
@@ -93,8 +94,10 @@ class Helpers {
         return json_encode($context, $pretty | JSON_UNESCAPED_SLASHES);
     }
 
-    protected static function registerHelper(Snidely $snidely, $name) {
-        $snidely->registerHelper($name, ['\\'.get_called_class(), $name]);
+    protected static function registerHelper(Snidely $snidely, $name, $fname = null) {
+        if ($fname === null)
+            $fname = $name;
+        $snidely->registerHelper($name, ['\\'.get_called_class(), $fname]);
     }
 
     public static function registerHelpers(Snidely $snidely) {

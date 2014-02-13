@@ -10,19 +10,40 @@ namespace Snidely;
 
 class PhpCompiler extends Compiler {
 
+    const COMPILE_MUSTACHE_CONTEXT = 0x1;
+    const COMPILE_MUSTACHE_HELPERS = 0x2;
+    const COMPILE_MUSTACHE = 0xF;
+
+    const COMPILE_HANDLEBARS_SCOPE_IF = 0x10; // whether or not to push the scope on if statements.
+    const COMPILE_HANDLEBARS = 0xF0;
+
     /// Properties ///
+
+    public $flags = 0;
 
     protected $php = true;
     protected $str = false;
 
+    protected $helpersClass;
+
+
     /// Methods ///
 
-    public function __construct($snidely) {
+    public function __construct($snidely, $flags = 0) {
         $this->snidely = $snidely;
+        $this->flags = $flags;
+
+        if ($this->flags & self::COMPILE_MUSTACHE_HELPERS)
+            $this->helpersClass = '\Snidely\MustacheHelpers';
+        else
+            $this->helpersClass = '\Snidely\Helpers';
+
         $this->registerCompileHelper('if', [$this, 'ifHelper']);
         $this->registerCompileHelper('unless', [$this, 'unlessHelper']);
-        $this->snidely->registerHelper('each', ['\Snidely\Snidely', 'each']);
-        $this->snidely->registerHelper('with', ['\Snidely\Snidely', 'with']);
+//        $this->snidely->registerHelper('each', ['\Snidely\Snidely', 'each']);
+//        $this->snidely->registerHelper('with', ['\Snidely\Snidely', 'with']);
+
+        call_user_func(array($this->helpersClass, 'registerHelpers'), $this->snidely);
     }
 
     public function comment($node, $indent) {
@@ -70,6 +91,7 @@ class PhpCompiler extends Compiler {
                 return $this->indent($indent).'echo '.$str;
             }
         }
+        return '';
     }
 
     public function escaped($node, $indent) {
@@ -83,14 +105,19 @@ class PhpCompiler extends Compiler {
         return $result;
     }
 
-    public function getContext($path, $i = 0) {
+    public function getContext($path, $i = 0, $node = null) {
         if (isset($path[Tokenizer::ARGS]))
             $path = $path[Tokenizer::ARGS][$i];
 
-        $var = '$scope';
+        if ($this->flags & self::COMPILE_MUSTACHE_CONTEXT)
+            $var = '$scope';
+        else
+            $var = '$context';
+
         $paren = ['[', ']'];
         $first = true;
         $result = '';
+        $root_count = 0;
 
         foreach ($path as $part) {
             if (!is_array($part)) {
@@ -102,12 +129,23 @@ class PhpCompiler extends Compiler {
 
             switch ($type) {
                 case Tokenizer::T_DOT:
-                    if ($first) {
-                        if ($value === '.') {
-                            $var = '$context';
-                        } elseif ($value === '..') {
-                            $var = '$scope->root';
-                        }
+                    switch ($value) {
+                        case '.':
+                            if ($first) {
+                                $var = '$context';
+                            }
+                            break;
+                        case '..':
+                            $root_count++;
+
+                            if ($root_count === 1) {
+                                $var = '$scope->root';
+                            } else {
+                                $var = "\$scope->root(-$root_count)";
+                            }
+                            $var = "\$scope->root(-$root_count)";
+
+                            break;
                     }
 
                     break;
@@ -157,7 +195,7 @@ class PhpCompiler extends Compiler {
         // First add the hash to the table.
         if (isset($node[Tokenizer::HASH])) {
             foreach ($node[Tokenizer::HASH] as $key => $arg) {
-                $options['hash'][$key] = $this->getContext($arg);
+                $options['hash'][$key] = $this->getContext($arg, 0, $node);
             }
         }
 
@@ -249,7 +287,7 @@ class PhpCompiler extends Compiler {
 
                 if (isset($node_args[$i])) {
                     // The argument was passed in order.
-                    $args[$i] = $this->getContext($node_args[$i]);
+                    $args[$i] = $this->getContext($node_args[$i], 0, $node);
                 } elseif (isset($node[Tokenizer::HASH][$param_name])) {
                     // The argument was passed by name.
                     $args[$i] = $this->getContext($node[Tokenizer::HASH][$param_name]);
@@ -259,6 +297,8 @@ class PhpCompiler extends Compiler {
                 } elseif (in_array(strtolower($param_name), array('context', 'scope', 'snidely'))) {
                     // This argument takes the current context or the scope.
                     $args[$i] = '$'.strtolower($param_name);
+                } elseif (strtolower($param_name) === 'prev') {
+                    $args[$i] = '$context';
                 } elseif (strtolower($param_name) === 'options') {
                     $args[$i] = $this->getOptions($node, $indent, true);
                     $options_passed = true;
@@ -289,11 +329,11 @@ class PhpCompiler extends Compiler {
         if ($call) {
             switch ($node[Tokenizer::TYPE]) {
                 case Tokenizer::T_ESCAPED:
-                    $result .= $this->str('htmlspecialchars(' . $call . ')', $indent);
+                    $result .= $this->str('htmlspecialchars(' . $call . ')', $indent - 1);
                     break;
                 case Tokenizer::T_UNESCAPED:
                 case Tokenizer::T_UNESCAPED_2:
-                    $result .= $this->str($call, $indent);
+                    $result .= $this->str($call, $indent - 1);
                     break;
                 default;
                     $result .= "\n"
@@ -327,8 +367,14 @@ class PhpCompiler extends Compiler {
         $result = $this->php(true).$this->str();
         $context = $this->getContext($node, 1);
 
-        // Push the context.
-        $result .= "\n".$this->indent($indent)."if ({$mod}{$context}) {\n";
+        $result .= "\n";
+
+        // Push the context because handlebars does.
+        if ($this->flags & self::COMPILE_HANDLEBARS_SCOPE_IF) {
+            $result .= $this->indent($indent)."\$scope->push(\$context);\n";
+        }
+
+        $result .= $this->indent($indent)."if ({$mod}{$context}) {\n";
 
         $result .= $this->compileNodes($node[Tokenizer::NODES], $indent + 1);
 
@@ -338,7 +384,13 @@ class PhpCompiler extends Compiler {
             $result .= $this->compileNodes($node[Tokenizer::INVERSE], $indent + 1);
         }
 
-        $result .= $this->str().$this->php(true, $indent)."}\n\n";
+        $result .= $this->str().$this->php(true, $indent)."}\n";
+
+        if ($this->flags & self::COMPILE_HANDLEBARS_SCOPE_IF) {
+            $result .= $this->indent($indent)."\$scope->pop();\n";
+        }
+
+        $result .= "\n";
 
         return $result;
     }
@@ -400,7 +452,7 @@ class PhpCompiler extends Compiler {
 
         $result .= "\n"
                 . $this->getSnidely($node, $indent)."\n"
-                . $this->indent($indent)."\Snidely\Snidely::section($context, \$scope, $options);\n\n";
+                . $this->indent($indent)."{$this->helpersClass}::section($context, \$scope, \$context, $options);\n\n";
         return $result;
     }
 

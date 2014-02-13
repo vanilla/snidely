@@ -27,6 +27,11 @@ class Scope implements \ArrayAccess {
      */
     public $root;
 
+    /**
+     * @var array
+     */
+    protected $rootStack;
+
 
     /// Methods ///
 
@@ -42,6 +47,8 @@ class Scope implements \ArrayAccess {
         } else {
             $this->root = $root;
         }
+        $this->rootStack = [$this->root];
+
 
         $this->dataStack = [];
     }
@@ -52,6 +59,7 @@ class Scope implements \ArrayAccess {
      * @return mixed|null
      */
     public function data($key) {
+
         for ($i = count($this->dataStack) - 1; $i >= 0; $i--) {
             if (array_key_exists($key, $this->dataStack[$i])) {
                 $result = $this->dataStack[$i][$key];
@@ -101,19 +109,30 @@ class Scope implements \ArrayAccess {
         }
     }
 
+    public function peek() {
+        assert(!empty($this->contextStack));
+
+        return end($this->contextStack);
+    }
+
     public function pop() {
+        if (empty($this->contextStack))
+            throw new \Exception("You tried to pop off an empty stack.", 500);
+
         return array_pop($this->contextStack);
     }
 
     public function popData() {
+        assert(!empty($this->dataStack));
+
         return array_pop($this->dataStack);
     }
 
-    public function push(array $context = []) {
+    public function push($context = []) {
         array_push($this->contextStack, $context);
     }
 
-    public function pushData(array $context = []) {
+    public function pushData($context = []) {
         array_push($this->dataStack, $context);
     }
 
@@ -122,6 +141,8 @@ class Scope implements \ArrayAccess {
      * @param array $context
      */
     public function replace($context) {
+        assert(!empty($this->contextStack));
+
         if (empty($this->contextStack)) {
             $this->contextStack = [$context];
         } else {
@@ -130,13 +151,12 @@ class Scope implements \ArrayAccess {
     }
 
     public function replaceData($context) {
+        assert(!empty($this->dataStack));
         $this->dataStack[count($this->dataStack) - 1] = $context;
     }
 
-    public function root($name) {
-        if (!isset($this->root[$name]))
-            return null;
-        return $this->root[$name];
+    public function root($level = -1) {
+        return $this->contextStack[count($this->contextStack) + $level];
     }
 
 //    public static function wrap(&$array) {

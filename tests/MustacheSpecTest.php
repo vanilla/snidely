@@ -1,7 +1,7 @@
 <?php
 
 use Snidely\Snidely;
-use Symfony\Component\Yaml\Yaml;
+use Snidely\PhpCompiler;
 
 
 class MustacheSpecTest extends PHPUnit_Framework_TestCase {
@@ -29,8 +29,9 @@ class MustacheSpecTest extends PHPUnit_Framework_TestCase {
 
 
         $snidely = new Snidely();
+        $snidely->compilerFlags = PhpCompiler::COMPILE_MUSTACHE;
 
-        $snidely->cachePath($cache_path = __DIR__.'/cache/mustache-spec');
+        $snidely->cachePath($cache_path = __DIR__.'/cache/MustacheSpecTest');
         if (!file_exists($snidely->cachePath()))
             mkdir($snidely->cachePath(), 0777, true);
 

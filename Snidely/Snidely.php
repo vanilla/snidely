@@ -22,9 +22,19 @@ class Snidely {
     protected $cachePath;
 
     /**
+     * @var int Flags to pass to the {@link PhpCompile}.
+     */
+    public $compilerFlags = 0;
+
+    /**
      * @var array An array of helper functions for the template.
      */
     public $helpers = [];
+
+    /**
+     * @var array[callable]
+     */
+    protected $partialLoaders = [];
 
     /**
      * @var array An array of partials for the template.
@@ -51,6 +61,7 @@ class Snidely {
     /**
      * @param string $template
      * @param Snidely\Compiler $compiler
+     * @return callable Returns a closure that will render the template when called.
      */
     public function compile($template, $key = null) {
         if ($key === null)
@@ -62,7 +73,15 @@ class Snidely {
                  ."namespace Snidely;\n"
                  ."/*\n".$template."\n*/\n"
                  . $this->precompile($template);
-            $this->file_put_contents_atomic($path, $php, $this->cacheFileMode);
+
+            if (file_exists($path)) {
+                $current_php = file_get_contents($path);
+                if ($current_php != $php) {
+                    $this->file_put_contents_atomic($path, $php, $this->cacheFileMode);
+                }
+            } else {
+                $this->file_put_contents_atomic($path, $php, $this->cacheFileMode);
+            }
         }
 
         return require_snidely($this, $path);
@@ -70,63 +89,9 @@ class Snidely {
 
     public function precompile($template) {
         $nodes = $this->parse($template);
-        $compiler = new PhpCompiler($this);
+        $compiler = new PhpCompiler($this, $this->compilerFlags);
 
         return $compiler->compile($nodes);
-    }
-
-    /**
-     * A helper that implents the runtime version of the {{#each }} section.
-     * @param array $context
-     * @param array $options
-     */
-    public static function each($context, Scope $scope, $options) {
-        if (empty($context)) {
-            // The context is empty so display the inverse template.
-            if (isset($options['inverse'])) {
-                call_user_func($options['inverse'], $context, $scope, $options);
-            }
-        } elseif (is_array($context)) {
-            // Get the item separator if any.
-            if (isset($options['hash']['sep'])) {
-                $sep = $options['hash']['sep'];
-            } else {
-                $sep = '';
-            }
-
-            // Push a placeholder for the value.
-            $scope = new Scope($context, $scope->root);
-            $scope->pushData();
-
-            $i = 0;
-            $count = count($context);
-
-            // Loop through the context and call the template on each one.
-            $first = true;
-            foreach ($context as $key => $value) {
-                $scope->replace($value);
-                $scope->replaceData([
-                        'index' => $i,
-                        'key' => $key,
-                        'first' => $first,
-                        'last' => $i === $count - 1
-                        ]);
-
-                // Echo the separator between the items.
-                if ($first === true) {
-                    $first = false;
-                } else {
-                    echo $sep;
-                }
-
-                // Call the item template.
-                call_user_func($options['fn'], $scope, $scope, $options, $key);
-                $i++;
-            }
-
-//            $scope->pop();
-            $scope->popData();
-        }
     }
 
     /**
@@ -136,17 +101,16 @@ class Snidely {
      * @return string
      */
     public function fetch(callable $compiled_template, array $data) {
-        $this->pushErrorReporting();
-
         try {
             ob_start();
+            $this->pushErrorReporting();
             $compiled_template($data, $this);
+            $this->popErrorReporting();
             $result = ob_get_clean();
         } catch(\Exception $ex) {
+            $this->popErrorReporting();
             $result = ob_get_clean();
         }
-
-        $this->popErrorReporting();
 
         return $result;
     }
@@ -186,9 +150,17 @@ class Snidely {
         return $nodes;
     }
 
-    public function partial($name, $context, $scope) {
+    public function partial($name, $context, Scope $scope) {
         if (isset($this->partials[$name])) {
             call_user_func($this->partials[$name], $context, $this);
+        } else {
+            foreach ($this->partialLoaders as $callback) {
+                $partial = $callback($name, $context, $scope, $this);
+
+                if ($partial !== null) {
+                    call_user_func($partial, $context, $this);
+                }
+            }
         }
     }
 
@@ -202,6 +174,7 @@ class Snidely {
     public function pushErrorReporting() {
         if ($this->pushedErrorReporting === null) {
             $this->pushedErrorReporting = error_reporting(error_reporting() & ~E_NOTICE & ~E_WARNING);
+//            $this->pushedErrorReporting = error_reporting();
         }
     }
 
@@ -216,6 +189,7 @@ class Snidely {
      * Register a
      * @param string $name The name of the partial.
      * @param string|callable $partial A template source or function that implements the partial.
+     * @param bool $force_compile
      */
     public function registerPartial($name, $partial, $force_compile = false) {
         if (!$force_compile && is_callable($partial)) {
@@ -226,67 +200,17 @@ class Snidely {
         }
     }
 
-    /**
-     * A helper that implements the runtime of block sections.
-     * @param array $context
-     * @param array $options
-     */
-    public static function section($context, Scope $scope, $options) {
-        if (empty($context)) {
-            return;
-        } elseif (is_array($context)) {
-            if (isset($context[0])) {
-                // This is a numeric array and is looped.
-
-                // Push a placeholder for the loop.
-                $scope->push();
-                $scope->pushData();
-
-                $i = 0;
-                $count = count($context);
-
-                foreach ($context as $key => $context_row) {
-                    $scope->replace($context_row);
-                    $scope->replaceData([
-                        'index' => $i,
-                        'key' => $key,
-                        'first' => $i === 0,
-                        'last' => $i === $count - 1
-                        ]);
-
-
-                    $fn = $options['fn'];
-                    $fn($context_row, $scope, $key);
-
-                    $i++;
-                }
-
-                $scope->pop();
-                $scope->popData();
-            } else {
-                // This is an object-like array and is like a with.
-                $scope->push($context);
-                $options['fn']($context, $scope);
-                $scope->pop();
-            }
-        } else {
-            // This is an atomic value and is like an if (true).
-            $options['fn']($context, $scope);
-        }
-    }
-
-    public static function with($context, Scope $scope, $options) {
-        if (empty($context))
-            return;
-
-        $scope = new Scope($context, $scope->root);
-
-        $fn = $options['fn'];
-        $fn($context, $scope, $options);
+    public function registerPartialLoader(callable $callback) {
+        $this->partialLoaders[] = $callback;
     }
 }
 
 
-function require_snidely($snidely, $path) {
+/**
+ * @param Snidely $snidely
+ * @param string $path
+ * @return callable
+ */
+function require_snidely(Snidely $snidely, $path) {
     return require $path;
 }

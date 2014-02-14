@@ -254,6 +254,11 @@ class PhpCompiler extends Compiler {
         $result = $this->str().$this->php(true, $indent);
         $call = null;
         $params = null;
+        $call_comma = '';
+
+        if ($node['name'] === 'awesome') {
+            $foo = 'bar';
+        }
 
         // Try and make the helper call nice.
         if (is_string($helper)) {
@@ -278,7 +283,13 @@ class PhpCompiler extends Compiler {
 
         if (!isset($call)) {
             // There is no nice call so we just need to call it at runtime.
-            $call = 'call_user_func($snidely->helpers[' . var_export($node[Tokenizer::NAME], true) . '], ';
+            $call = 'call_user_func($snidely->helpers[' . var_export($node[Tokenizer::NAME], true) . ']';
+            $call_comma = ', ';
+
+            if (is_callable($helper)) {
+                $rfunction = new \ReflectionFunction($helper);
+                $params = $rfunction->getParameters();
+            }
         }
 
         // Try and reflect the arguments out of the
@@ -339,6 +350,9 @@ class PhpCompiler extends Compiler {
             }
         }
 
+        if (!empty($args)) {
+            $call .= $call_comma;
+        }
         $call .= implode(', ', $args) . ')';
 
         if ($call) {

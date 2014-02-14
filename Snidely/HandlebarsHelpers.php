@@ -74,7 +74,10 @@ class HandlebarsHelpers extends Helpers {
      * @return string Returns the html escaped string version of `$value`.
      */
     public static function escapeStr($value) {
-        return htmlspecialchars(static::str($value));
+        return strtr(
+            htmlspecialchars(static::str($value)),
+            ["'" => "&#x27;", "`" => "&#x60;"]
+            );
     }
 
     /**

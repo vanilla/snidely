@@ -1,0 +1,23 @@
+Hello {{name}}, you have just won ${{value}}!
+<ul>
+{{#each .}}
+ <li>{{name}} is a {{gender}} ({{../name}}, {{../value}}, {{../end}})</li>
+{{/each}}
+</ul>
+{{end}}
+{{#each this}}
+ THIS:{{name}} is a {{{gender}}}
+ PARENT: {{{../name}}}, {{{../value}}}, {{{../end}}} END {{end}} NAME {{name}}
+{{/each}}
+Section This:
+{{#this}}
+ <li>X~{{name}} is a {{gender}} ({{../name}}, {{../value}}, {{../end}})</li>
+{{/this}}
+Section Var:
+{{#people}}
+ <li>XXXVAR{{name}} is a {{gender}} ({{../name}}, {{../value}}, {{../end}})</li>
+{{/people}}
+Each Var:
+{{#each people}}
+ <li>XXX-EACH-VAR{{name}} is a {{gender}} ({{../name}}, {{../value}}, {{../end}})</li>
+{{/each}}

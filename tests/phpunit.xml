@@ -15,7 +15,13 @@ and open the template in the editor.
 
     <testsuites>
         <testsuite name="Default">
-            <directory suffix="Test.php">.</directory>
+            <directory suffix="Test.php">default</directory>
+        </testsuite>
+        <testsuite name="handlebars">
+            <directory suffix="Test.php">handlebars</directory>
+        </testsuite>
+        <testsuite name="mustache">
+            <directory suffix="Test.php">mustache</directory>
         </testsuite>
     </testsuites>
 

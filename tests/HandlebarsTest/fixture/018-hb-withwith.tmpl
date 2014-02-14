@@ -1,0 +1,41 @@
+<div class="yui3-u-1-2 member-status">
+ <ul class="h-list">
+ {{#with login_status}}
+  {{#if is_login}}
+   <li><a href="{{edit_account_link}}">Hello {{username}}</a></li>
+   <li><a href="{{logut_link}}">Logout</a></li>
+  {{/if}}
+  {{#unless is_login}}
+   <li>New User? <a href="{{register_link}}">Register Now</a></li>
+   <li><a href="{{login_link}}">Login</a></li>
+  {{/unless}}
+~WITH
+  {{#with test}}
+~TEST~
+   {{testval}}
+   {{{testval}}}
+~IF~
+   {{#if testval}}YES{{/if}}
+   {{#unless testval}}NO{{/unless}}
+~SEC~
+   {{#test2}}
+    {{loopval}}
+   {{/test2}}
+~EACH~
+   {{#each test3}}
+    {{loopval}}
+   {{/each}}
+~END~
+  {{/with}}
+WITH~
+ {{/with}}
+_WITH PATH_
+ {{#with login_status.test}}
+XTEST: {{testval}} - {{{textval}}}
+IF: {{#if testval}}YES~{{/if}}{{#unless testval}}NO!{{/unless}}
+SECTION::{{#test2}} - loop: {{loopval}}{{/test2}}
+EACH::{{#each test3}}	lp:{{{loopval}}}{{/each}}
+END!
+ {{/with}}
+ </ul>
+</div>

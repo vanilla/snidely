@@ -1,0 +1,18 @@
+Hello {{name}}, you have just won ${{value}}!
+include this:
+    {{> 001-simple-vars}}
+end include.
+section partial....
+{{#winners}}
+  {{> 001-simple-vars}}
+{{/winners}}
+end section.
+
+Winners: {{#winners}}{{this}}({{{this}}}) = {{.}}({{{.}}}){{/winners}}
+
+Partial1:{{>001-simple-vars}}
+Partial2:{{>	001-simple-vars}}
+Partial3:{{>  001-simple-vars}}
+Partial4:{{> 	001-simple-vars}}
+Partial5:{{> 	001-simple-vars }}
+Partial6:{{> 	001-simple-vars	}}

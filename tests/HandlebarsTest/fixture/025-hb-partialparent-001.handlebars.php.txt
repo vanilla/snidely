@@ -1,0 +1,24 @@
+Hello John, you have just won $10000!
+
+##0 start section:
+  - EACH 1 -  ~ John
+partial001  - EACH 2-  ~ John
+  - EACH 1 -  ~ John
+partial001  - EACH 2-  ~ John
+end section.
+
+##1 start each:
+  - EACH 3 -  ~ John
+partial001  - EACH 4 -  ~ John
+  - EACH 3 -  ~ John
+partial001  - EACH 4 -  ~ John
+end each.
+
+##2 start each+if:
+end each+if.
+
+##3 start each+if+with:
+end each+if+with.
+
+##4 start each+with+if:
+end each+with+if.

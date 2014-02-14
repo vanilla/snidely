@@ -29,9 +29,9 @@ class MustacheSpecTest extends PHPUnit_Framework_TestCase {
 
 
         $snidely = new Snidely();
-        $snidely->compilerFlags = PhpCompiler::COMPILE_MUSTACHE;
+        $snidely->compilerFlags = PhpCompiler::MUSTACHE;
 
-        $snidely->cachePath($cache_path = __DIR__.'/cache/MustacheSpecTest');
+        $snidely->cachePath($cache_path = PATH_TEST_CACHE.'/MustacheSpecTest');
         if (!file_exists($snidely->cachePath()))
             mkdir($snidely->cachePath(), 0777, true);
 
@@ -116,7 +116,7 @@ class MustacheSpecTest extends PHPUnit_Framework_TestCase {
     }
 
     protected function provider($name) {
-        $paths = glob(__DIR__."/mustache-spec/specs/$name.json");
+        $paths = glob(PATH_TEST."/mustache-spec/specs/$name.json");
 
         if (empty($paths)) {
             $this->markTestSkipped("Skipping $name. Make sure you symlink git@github.com:mustache/spec.git as mustache-spec.");

@@ -1,0 +1,45 @@
+Hello {{name}}, you have just won ${{value}}!
+
+##0 start section:
+{{#winners}}
+  - EACH 1 - {{name}} ~ {{../name}}
+  {{> partial001}}
+  - EACH 2- {{name}} ~ {{../name}}
+{{/winners}}
+end section.
+
+##1 start each:
+{{#each winners}}
+  - EACH 3 - {{name}} ~ {{../name}}
+  {{> partial001}}
+  - EACH 4 - {{name}} ~ {{../name}}
+{{/each}}
+end each.
+
+##2 start each+if:
+{{#each winners}}
+ {{#if test}}
+  {{> partial001}}
+ {{/if}}
+{{/each}}
+end each+if.
+
+##3 start each+if+with:
+{{#each winners}}
+ {{#if test}}
+  {{#with people}}
+   {{> partial001}}
+  {{/with}}
+ {{/if}}
+{{/each}}
+end each+if+with.
+
+##4 start each+with+if:
+{{#each winners}}
+ {{#with people}}
+  {{#if test}}
+   {{> partial001}}
+  {{/if}}
+ {{/with}}
+{{/each}}
+end each+with+if.

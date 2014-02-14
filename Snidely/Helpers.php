@@ -121,38 +121,6 @@ class Helpers {
         } elseif (is_array($context)) {
             if (isset($context[0])) {
                 static::each($context, $scope, $prev, $options);
-
-                // This is a numeric array and is looped.
-
-                // Push a placeholder for the loop.
-//                $scope->push();
-//                $scope->pushData();
-
-//                // Handlebars doesn't allow parent traversal within loops.
-//                $scope = new Scope($context, $scope->root);
-//                $scope->pushData();
-//
-//                $i = 0;
-//                $count = count($context);
-//
-//                foreach ($context as $key => $context_row) {
-//                    $scope->replace($context_row);
-//                    $scope->replaceData([
-//                        'index' => $i,
-//                        'key' => $key,
-//                        'first' => $i === 0,
-//                        'last' => $i === $count - 1
-//                    ]);
-//
-//
-//                    $fn = $options['fn'];
-//                    $fn($context_row, $scope, $key);
-//
-//                    $i++;
-//                }
-//
-////                $scope->pop();
-//                $scope->popData();
             } else {
                 // This is an object-like array and is like a with.
 //                $scope->push($context);
@@ -160,7 +128,7 @@ class Helpers {
 //                $scope->pop();
             }
         } else {
-            if ($context === true || $context === 1 || $context === "1") {
+            if (static::truthy($context)) {
                 // A truthy value is like an if.
                 $options['fn']($prev, $scope);
             } else {
@@ -168,6 +136,10 @@ class Helpers {
                 $options['fn'](new ValueContext($context), $scope);
             }
         }
+    }
+
+    public static function truthy($context) {
+        return $context === true || $context === 1 || $context === "1";
     }
 
     public static function with($context, Scope $scope, $prev, $options) {

@@ -5,6 +5,13 @@ use Snidely\Scope;
 
 class HandlebarsSpecTest extends PHPUnit_Framework_TestCase {
     public $skip = array(
+        'basic context-escaping-00' => 'Not implemented.',
+        'basic context-escaping-01' => 'Not implemented.',
+        'basic context-escaping-02' => 'Not implemented.',
+        'basic context-escaping-03' => 'Not implemented.',
+//        'basic context-escaping expressions-02' => 'Not implemented.',
+//        'basic context-functions-00' => 'Spec not complete.',
+//        'basic context-functions-01' => 'Spec not complete.',
     );
 
 
@@ -24,18 +31,31 @@ class HandlebarsSpecTest extends PHPUnit_Framework_TestCase {
         $snidely = new Snidely();
         $snidely->compilerFlags = \Snidely\PhpCompiler::HANDLEBARS;
 
-        $snidely->cachePath($cache_path = __DIR__.'/cache/handlebars-spec');
+        $snidely->cachePath($cache_path = PATH_TEST_CACHE.'/handlebars-spec');
         if (!file_exists($snidely->cachePath()))
             mkdir($snidely->cachePath(), 0777, true);
 
-        $fn = $snidely->compile($spec['template']);
+        // Grab the helpers.
+        if (isset($spec['helpers'])) {
+            foreach ($spec['helpers'] as $fname => $defs) {
+                if (isset($defs['php'])) {
+                    eval("\$helper_fn = {$defs['php']};");
+                    $snidely->registerHelper($fname, $helper_fn);
+                } else {
+                    $this->markTestIncomplete("No definition for helper $fname.");
+                }
+            }
+        }
 
-        // Run the template.
+        $fn = $snidely->compile($spec['template'], $name);
+
+        // Grab the data.
         if (isset($spec['data']))
             $data = $spec['data'];
         else
             $data = [];
 
+        // Run the template.
         $actual = $snidely->fetch($fn, $data);
 
         // Compare to the expected.
@@ -43,6 +63,7 @@ class HandlebarsSpecTest extends PHPUnit_Framework_TestCase {
 
         $this->assertStrippedEquals($expected, $actual);
     }
+
 
     /**
      * Handlebars doesn't strip whitespace like mustache or snidely.
@@ -57,7 +78,7 @@ class HandlebarsSpecTest extends PHPUnit_Framework_TestCase {
     }
 
     public function provider() {
-        $paths = glob(__DIR__."/handlebars-spec/spec/*.json");
+        $paths = glob(PATH_TEST."/handlebars-spec/spec/*.json");
 
         $result = array();
         foreach ($paths as $path) {

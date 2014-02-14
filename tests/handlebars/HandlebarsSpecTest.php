@@ -5,10 +5,10 @@ use Snidely\Scope;
 
 class HandlebarsSpecTest extends PHPUnit_Framework_TestCase {
     public $skip = array(
-        'basic context-escaping-00' => 'Not implemented.',
-        'basic context-escaping-01' => 'Not implemented.',
-        'basic context-escaping-02' => 'Not implemented.',
-        'basic context-escaping-03' => 'Not implemented.',
+//        'basic context-escaping-00' => 'Not implemented.',
+//        'basic context-escaping-01' => 'Not implemented.',
+//        'basic context-escaping-02' => 'Not implemented.',
+//        'basic context-escaping-03' => 'Not implemented.',
 //        'basic context-escaping expressions-02' => 'Not implemented.',
 //        'basic context-functions-00' => 'Spec not complete.',
 //        'basic context-functions-01' => 'Spec not complete.',

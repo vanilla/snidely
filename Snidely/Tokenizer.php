@@ -30,6 +30,7 @@ class Tokenizer {
     const T_PARTIAL      = '>';
     const T_PARTIAL_2    = '<';
     const T_DELIM_CHANGE = '=';
+    const T_ESCAPE_CHAR = '\\';
     const T_ESCAPED      = '_v';
     const T_UNESCAPED    = '{';
     const T_UNESCAPED_2  = '&';
@@ -98,6 +99,11 @@ class Tokenizer {
     private $otag;
     private $ctag;
 
+    /**
+     * @var bool Whether or not to allow escaping of tags with a \
+     */
+    private $allowEscapes = true;
+
     public function __construct() {
         $this->argsTokenizer = new ArgsTokenizer();
     }
@@ -124,7 +130,10 @@ class Tokenizer {
         for ($i = 0; $i < $len; $i++) {
             switch ($this->state) {
                 case self::IN_TEXT:
-                    if ($this->tagChange($this->otag, $text, $i)) {
+                    if ($this->tagEscape($this->otag, $text, $i, $b, $new_i)) {
+                        $i = $new_i;
+                        $this->buffer .= $b;
+                    } elseif ($this->tagChange($this->otag, $text, $i)) {
                         $i--;
                         $this->flushBuffer();
                         $this->state = self::IN_TAG_TYPE;
@@ -310,5 +319,39 @@ class Tokenizer {
     private function tagChange($tag, $text, $index)
     {
         return substr($text, $index, strlen($tag)) === $tag;
+    }
+
+    /**
+     * Test whether the tag should be escaped.
+     * @param $tag
+     * @param $text
+     * @param $index
+     * @param string $buffer The buffer stub that is returned after escaping.
+     * @param string $new_index
+     */
+    private function tagEscape($tag, $text, $index, &$buffer = null, &$new_index = null) {
+        if (!$this->allowEscapes) {
+            return false;
+        }
+
+        // Check for \\{{ -> \{{
+        $str = self::T_ESCAPE_CHAR.self::T_ESCAPE_CHAR.$tag;
+        if (substr($text, $index, strlen($str)) === $str) {
+            $buffer = self::T_ESCAPE_CHAR;
+            $new_index = $index + 1; // + strlen('\\')
+
+            return true;
+        }
+
+        // Check for \{{ -> {{
+        $str = self::T_ESCAPE_CHAR.$tag;
+        if (substr($text, $index, strlen($str)) === $str) {
+            $buffer = $tag;
+            $new_index = $index + strlen($str) - 1;
+
+            return true;
+        }
+
+        return false;
     }
 }

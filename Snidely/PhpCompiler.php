@@ -71,12 +71,12 @@ class PhpCompiler extends Compiler {
 
     public function compile($nodes) {
         $result = $this->php(true)
-                . "namespace Snidely {\n"
+                . "namespace Snidely {\n\n"
                 . "return function(\$context, \$snidely) {\n"
                 . $this->indent(1).'$scope = new Scope($context);'."\n\n"
                 . $this->compileClosure($nodes, 0, false)
                 . $this->str().$this->php(true)."};\n"
-                ."}\n";
+                ."\n}\n";
 
         return $result;
     }

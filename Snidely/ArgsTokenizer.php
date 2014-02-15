@@ -98,9 +98,13 @@ class ArgsTokenizer {
                             break;
                         case Tokenizer::T_SLASH:
                         case Tokenizer::T_DOT:
-                            if ($this->buffer)
-                                $this->flushBuffer();
-                            else {
+                            if ($this->buffer) {
+                                if ($this->buffer === 'this') {
+                                    $this->flushBuffer(Tokenizer::T_DOT);
+                                } else {
+                                    $this->flushBuffer();
+                                }
+                            } else {
                                 $this->state = self::IN_DOT;
                                 $this->buffer .= $c;
                             }

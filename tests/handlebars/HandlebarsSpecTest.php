@@ -12,12 +12,13 @@ class HandlebarsSpecTest extends PHPUnit_Framework_TestCase {
         'basic context-block functions without context argument-00' => 1,
         'basic context-pathed block functions without context argument-00' => 1,
         'basic context-depthed block functions without context argument-00' => 1,
-        'basic context-this keyword nested inside path-00' => 0,
-        'basic context-this keyword in helpers-00' => 0,
-        'basic context-this keyword in helpers-01' => 0,
-        'basic context-this keyword nested inside helpers param-00' => 0,
-        'basic context-functions returning safestrings shouldn\'t be escaped-00' => 1,
-        'basic context-that current context path ({{.}}) doesn\'t hit helpers-00' => 1,
+//        'basic context-this keyword nested inside path-00' => 0,
+        'basic context-that current context path ({{.}}) doesn\'t hit helpers-00' => 1
+//        'basic context-this keyword in helpers-00' => 0,
+//        'basic context-this keyword in helpers-01' => 0,
+//        'basic context-this keyword nested inside helpers param-00' => 0,
+//        'basic context-functions returning safestrings shouldn\'t be escaped-00' => 1,
+//        'basic context-that current context path ({{.}}) doesn\'t hit helpers-00' => 1,
     ];
 
 
@@ -33,6 +34,10 @@ class HandlebarsSpecTest extends PHPUnit_Framework_TestCase {
             return;
         }
 
+        if (!isset($spec['template'])) {
+            $this->markTestIncomplete('Missing template in spec');
+        }
+
         // Load and compile the template.
         $snidely = new Snidely();
         $snidely->compilerFlags = \Snidely\PhpCompiler::HANDLEBARS;
@@ -45,12 +50,17 @@ class HandlebarsSpecTest extends PHPUnit_Framework_TestCase {
         if (isset($spec['helpers'])) {
             foreach ($spec['helpers'] as $fname => $defs) {
                 if (isset($defs['php'])) {
+                    $helper_fn = function() { return ''; };
                     eval("\$helper_fn = {$defs['php']};");
                     $snidely->registerHelper($fname, $helper_fn);
                 } else {
                     $this->markTestIncomplete("No definition for helper $fname.");
                 }
             }
+        }
+
+        if (isset($spec['exception']) && $spec['exception']) {
+            $this->setExpectedException('Snidely\SyntaxException');
         }
 
         $fn = $snidely->compile($spec['template'], $name);
@@ -65,7 +75,7 @@ class HandlebarsSpecTest extends PHPUnit_Framework_TestCase {
         $actual = $snidely->fetch($fn, $data);
 
         // Compare to the expected.
-        $expected = $spec['expected'];
+        $expected = isset($spec['expected']) ? $spec['expected'] : '';
 
         $this->assertStrippedEquals($expected, $actual);
     }

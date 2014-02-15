@@ -15,7 +15,9 @@ class HandlebarsSpecTest extends PHPUnit_Framework_TestCase {
         'basic context-this keyword nested inside path-00' => 0,
         'basic context-this keyword in helpers-00' => 0,
         'basic context-this keyword in helpers-01' => 0,
-        'basic context-this keyword nested inside helpers param-00' => 0
+        'basic context-this keyword nested inside helpers param-00' => 0,
+        'basic context-functions returning safestrings shouldn\'t be escaped-00' => 1,
+        'basic context-that current context path ({{.}}) doesn\'t hit helpers-00' => 1,
     ];
 
 

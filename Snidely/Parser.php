@@ -49,9 +49,9 @@ class Parser {
             case Tokenizer::T_SPACE:
                if ($arg) {
                   if ($key)
-                     $hash[$key] = $this->buildArg($arg);
+                     $hash[$key] = $this->buildArg($arg, $node);
                   else
-                     $args[] = $this->buildArg($arg);
+                     $args[] = $this->buildArg($arg, $node);
 
                   $arg = array();
                   $key = null;
@@ -68,9 +68,9 @@ class Parser {
 
       if ($arg) {
          if ($key)
-            $hash[$key] = $this->buildArg($arg);
+            $hash[$key] = $this->buildArg($arg, $node);
          else
-            $args[] = $this->buildArg($arg);
+            $args[] = $this->buildArg($arg, $node);
       }
 
       $node[Tokenizer::ARGS] = $args;
@@ -84,7 +84,7 @@ class Parser {
      * @param array $arg
      * @return array
      */
-    protected function buildArg($arg) {
+    protected function buildArg($arg, $node) {
         if (count($arg) === 1 && $arg[0][Tokenizer::TYPE] === Tokenizer::T_VAR) {
             // This is a candidate for a literal.
             $val = '';
@@ -100,6 +100,21 @@ class Parser {
             if ($val !== '') {
                 $arg[0][Tokenizer::TYPE] = Tokenizer::T_STRING;
                 $arg[0][Tokenizer::VALUE] = $val;
+            }
+        }
+
+        // Validate the path.
+        $var_found = false;
+        foreach ($arg as $arg_node) {
+            switch ($arg_node[Tokenizer::TYPE]) {
+                case Tokenizer::T_VAR:
+                    $var_found = true;
+                    break;
+                case Tokenizer::T_DOT:
+                    if ($var_found) {
+                        throw new SyntaxException('Invalid path: '.$node[Tokenizer::ARGS_STR], $node);
+                    }
+                    break;
             }
         }
 

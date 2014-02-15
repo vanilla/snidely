@@ -147,6 +147,7 @@ class PhpCompiler extends Compiler {
                 case Tokenizer::T_DOT:
                     switch ($value) {
                         case '.':
+                        case 'this':
                             if ($first) {
                                 $var = '$context';
                             }

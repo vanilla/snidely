@@ -22,6 +22,14 @@ class BasicTest extends PHPUnit_Framework_TestCase {
 }
 EOT;
 
+    public function testBoolLiterals() {
+        $snidely = $this->snidely();
+        $snidely->registerHelper('foo', function($value) { return $value; });
+
+        $this->shouldCompileTo('testBoolLiterals01', '{{foo true}}', [], '1', $snidely);
+        $this->shouldCompileTo('testBoolLiterals02', '{{foo false}}', [], '', $snidely);
+    }
+
     public function testEmptyDoubleRoot() {
         $this->shouldCompileTo(__FUNCTION__, '{{../../foo}}', ['foo' => 'bar'], '');
     }
@@ -65,8 +73,10 @@ EOT;
         return $result;
     }
 
-    protected function shouldCompileTo($key, $template, $data, $expected) {
-        $snidely = $this->snidely();
+    protected function shouldCompileTo($key, $template, $data, $expected, Snidely $snidely = null) {
+        if ($snidely === null) {
+            $snidely = $this->snidely();
+        }
         $fn = $snidely->compile($template, $key);
 
         $result = $snidely->fetch($fn, $data);

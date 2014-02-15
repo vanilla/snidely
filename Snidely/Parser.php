@@ -49,9 +49,9 @@ class Parser {
             case Tokenizer::T_SPACE:
                if ($arg) {
                   if ($key)
-                     $hash[$key] = $arg;
+                     $hash[$key] = $this->buildArg($arg);
                   else
-                     $args[] = $arg;
+                     $args[] = $this->buildArg($arg);
 
                   $arg = array();
                   $key = null;
@@ -68,9 +68,9 @@ class Parser {
 
       if ($arg) {
          if ($key)
-            $hash[$key] = $arg;
+            $hash[$key] = $this->buildArg($arg);
          else
-            $args[] = $arg;
+            $args[] = $this->buildArg($arg);
       }
 
       $node[Tokenizer::ARGS] = $args;
@@ -78,6 +78,33 @@ class Parser {
          $node[Tokenizer::HASH] = $hash;
       }
    }
+
+    /**
+     * Look to convert an argument to a literal value.
+     * @param array $arg
+     * @return array
+     */
+    protected function buildArg($arg) {
+        if (count($arg) === 1 && $arg[0][Tokenizer::TYPE] === Tokenizer::T_VAR) {
+            // This is a candidate for a literal.
+            $val = '';
+            switch ($arg[0][Tokenizer::VALUE]) {
+                case Tokenizer::T_LITERAL_TRUE:
+                    $val = true;
+                    break;
+                case Tokenizer::T_LITERAL_FALSE:
+                    $val = false;
+                    break;
+            }
+
+            if ($val !== '') {
+                $arg[0][Tokenizer::TYPE] = Tokenizer::T_STRING;
+                $arg[0][Tokenizer::VALUE] = $val;
+            }
+        }
+
+        return $arg;
+    }
 
     /**
      * Helper method for recursively building a parse tree.

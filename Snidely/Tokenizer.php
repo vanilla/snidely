@@ -23,31 +23,33 @@ class Tokenizer {
     const IN_TAG      = 2;
 
     // Token types
-    const T_SECTION      = '#';
-    const T_INVERTED     = '^';
-    const T_END_SECTION  = '/';
-    const T_COMMENT      = '!';
-    const T_PARTIAL      = '>';
-    const T_PARTIAL_2    = '<';
-    const T_DELIM_CHANGE = '=';
-    const T_ESCAPE_CHAR = '\\';
-    const T_ESCAPED      = '_v';
-    const T_UNESCAPED    = '{';
-    const T_UNESCAPED_2  = '&';
-    const T_TEXT         = '_t';
-    const T_PRAGMA       = '%';
-    const T_QUOTE        = '"';
-    const T_QUOTE2       = "'";
-    const T_EQUALS       = '=';
-    const T_OLITERAL     = '[';
-    const T_CLITERAL     = ']';
-    const T_SPACE        = ' ';
-    const T_SLASH        = '/';
-    const T_DOT          = '.';
-    const T_ELSE         = '_else';
-    const T_STRING       = '_str';
-    const T_VAR          = '_var';
-    const T_KEY          = '_key';
+    const T_SECTION         = '#';
+    const T_INVERTED        = '^';
+    const T_END_SECTION     = '/';
+    const T_COMMENT         = '!';
+    const T_PARTIAL         = '>';
+    const T_PARTIAL_2       = '<';
+    const T_DELIM_CHANGE    = '=';
+    const T_ESCAPE_CHAR     = '\\';
+    const T_ESCAPED         = '_v';
+    const T_UNESCAPED       = '{';
+    const T_UNESCAPED_2     = '&';
+    const T_TEXT            = '_t';
+    const T_PRAGMA          = '%';
+    const T_QUOTE           = '"';
+    const T_QUOTE2          = "'";
+    const T_EQUALS          = '=';
+    const T_OLITERAL        = '[';
+    const T_CLITERAL        = ']';
+    const T_SPACE           = ' ';
+    const T_SLASH           = '/';
+    const T_DOT             = '.';
+    const T_ELSE            = '_else';
+    const T_STRING          = '_str';
+    const T_VAR             = '_var';
+    const T_KEY             = '_key';
+    const T_LITERAL_TRUE    = 'true';
+    const T_LITERAL_FALSE   = 'false';
 
     // Valid token types
     private static $tagTypes = array(

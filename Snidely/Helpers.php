@@ -127,7 +127,9 @@ class Helpers {
      */
     public static function section($context, Scope $scope, $prev, $options) {
         if (empty($context)) {
-            return;
+            if (isset($options['inverse'])) {
+                $options['inverse']($prev, $scope);
+            }
         } elseif (is_array($context)) {
             if (isset($context[0])) {
                 static::each($context, $scope, $prev, $options);

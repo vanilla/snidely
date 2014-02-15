@@ -1,0 +1,3 @@
+[submodule "tests/handlebars-spec"]
+	path = tests/handlebars-spec
+	url = git@github.com:kasperisager/handlebars-spec.git

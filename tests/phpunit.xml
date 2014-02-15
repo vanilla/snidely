@@ -25,7 +25,7 @@ and open the template in the editor.
         </testsuite>
     </testsuites>
 
-    <logging>
-        <log type="coverage-clover" target="build/logs/clover.xml"/>
-    </logging>
+    <!--<logging>-->
+        <!--<log type="coverage-clover" target="build/logs/clover.xml"/>-->
+    <!--</logging>-->
 </phpunit>

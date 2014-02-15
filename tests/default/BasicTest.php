@@ -30,6 +30,13 @@ EOT;
         $this->shouldCompileTo('testBoolLiterals02', '{{foo false}}', [], '', $snidely);
     }
 
+    public function testBadClose() {
+        $snidely = $this->snidely();
+
+        $this->setExpectedException('\Snidely\SyntaxException');
+        $snidely->compile("{{#each}}\nfoo\n{{/foo}}", 'testBadClose');
+    }
+
     public function testEmptyDoubleRoot() {
         $this->shouldCompileTo(__FUNCTION__, '{{../../foo}}', ['foo' => 'bar'], '');
     }

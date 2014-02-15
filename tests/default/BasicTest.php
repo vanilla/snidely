@@ -44,6 +44,16 @@ EOT;
         $this->assertEquals($expected, $actual);
     }
 
+    public function testHelperArgs() {
+        $snidely = $this->snidely();
+        $snidely->registerHelper('ucase', 'strtoupper');
+
+        $fn = $snidely->compile('{{ucase foo bar}}', 'testHelperArgs');
+
+        $str = $snidely->fetch($fn, ['foo' => 'foo']);
+        $this->assertEquals('FOO', $str);
+    }
+
     public function provideHbRoots() {
         $result = [
             ['{{parent.name}} {{parent.child.name}} {{parent.child.grandchild.name}}', 'parent child grandchild'],

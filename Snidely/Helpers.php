@@ -81,7 +81,7 @@ class Helpers {
         }
     }
 
-    public static function join($context, $sep) {
+    public static function join($context, $sep = ',') {
         if (is_array($context))
             echo implode($sep, $context);
         else
@@ -105,7 +105,17 @@ class Helpers {
         static::registerHelper($snidely, 'iif');
         static::registerHelper($snidely, 'join');
         static::registerHelper($snidely, 'json');
+        static::registerHelper($snidely, 'section');
         static::registerHelper($snidely, 'with');
+    }
+
+    public static function registerBuiltInHelers(Snidely $snidely) {
+        $snidely->registerHelper('count', 'count');
+        $snidely->registerHelper('fist', 'reset');
+        $snidely->registerHelper('last', 'end');
+        $snidely->registerHelper('lowercase', 'strtolower');
+        $snidely->registerHelper('titleize', 'ucwords');
+        $snidely->registerHelper('uppercase', 'strtoupper');
     }
 
     /**

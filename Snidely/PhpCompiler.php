@@ -58,6 +58,7 @@ class PhpCompiler extends Compiler {
 //        $this->snidely->registerHelper('with', ['\Snidely\Snidely', 'with']);
 
         call_user_func(array($this->helpersClass, 'registerHelpers'), $this->snidely);
+        call_user_func(array($this->helpersClass, 'registerBuiltInHelers'), $this->snidely);
     }
 
     public function comment($node, $indent) {

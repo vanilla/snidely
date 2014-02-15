@@ -18,7 +18,7 @@ class SyntaxException extends \Exception {
 
     public function __construct($msg, array $token) {
         $this->token = $token;
-        parent::__construct($msg);
+        parent::__construct($msg, 400);
     }
 
     public function getToken() {

@@ -72,7 +72,7 @@ class PhpCompiler extends Compiler {
     public function compile($nodes) {
         $result = $this->php(true)
                 . "namespace Snidely {\n\n"
-                . "return function(\$context, \$snidely) {\n"
+                . "return function(\$context) use (\$snidely) {\n"
                 . $this->indent(1).'$scope = new Scope($context);'."\n\n"
                 . $this->compileClosure($nodes, 0, false)
                 . $this->str().$this->php(true)."};\n"
@@ -333,10 +333,15 @@ class PhpCompiler extends Compiler {
                     $args[$i] = var_export($default, true);
                 }
             }
+
             // Add any additional arguments that were passed.
-            for ($i = 0; $i < count($node_args); $i++) {
-                $args[$i] = $this->getContext($node_args[$i]);
+            // We only do this for user-definied functions because most built-in functions throw an error if too many arguments are passed.
+            if (!isset($rfunction) || $rfunction->isUserDefined()) {
+                for ($i = count($args); $i < count($node_args); $i++) {
+                    $args[$i] = $this->getContext($node_args[$i]);
+                }
             }
+
             // Add the options.
             if (!$options_passed) {
                 $options = $this->getOptions($node, $indent);

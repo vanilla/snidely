@@ -4,15 +4,19 @@ use Snidely\Snidely;
 use Snidely\Scope;
 
 class HandlebarsSpecTest extends PHPUnit_Framework_TestCase {
-    public $skip = array(
-//        'basic context-escaping-00' => 'Not implemented.',
-//        'basic context-escaping-01' => 'Not implemented.',
-//        'basic context-escaping-02' => 'Not implemented.',
-//        'basic context-escaping-03' => 'Not implemented.',
-//        'basic context-escaping expressions-02' => 'Not implemented.',
-//        'basic context-functions-00' => 'Spec not complete.',
-//        'basic context-functions-01' => 'Spec not complete.',
-    );
+    public $skip = [
+        'basic context-pathed functions with context argument-00' => 1,
+        'basic context-depthed functions with context argument-00' => 1,
+        'basic context-block functions with context argument-00' => 1,
+        'basic context-depthed block functions with context argument-00' => 1,
+        'basic context-block functions without context argument-00' => 1,
+        'basic context-pathed block functions without context argument-00' => 1,
+        'basic context-depthed block functions without context argument-00' => 1,
+        'basic context-this keyword nested inside path-00' => 0,
+        'basic context-this keyword in helpers-00' => 0,
+        'basic context-this keyword in helpers-01' => 0,
+        'basic context-this keyword nested inside helpers param-00' => 0
+    ];
 
 
     /**

@@ -111,8 +111,8 @@ class Helpers {
 
     public static function registerBuiltInHelers(Snidely $snidely) {
         $snidely->registerHelper('count', 'count');
-        $snidely->registerHelper('fist', 'reset');
-        $snidely->registerHelper('last', 'end');
+//        $snidely->registerHelper('fist', 'reset');
+//        $snidely->registerHelper('last', 'end');
         $snidely->registerHelper('lowercase', 'strtolower');
         $snidely->registerHelper('titleize', 'ucwords');
         $snidely->registerHelper('uppercase', 'strtoupper');

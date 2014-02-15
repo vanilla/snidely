@@ -8,8 +8,8 @@
        { "name": "Todd Burry", "email": "todd@vanillaforums.com", "role": "Developer" }
    ],
    "autoload": {
-      "psr-0": {
-          "Snidely": "."
+      "psr-4": {
+          "Snidely\\": "src"
           }
    },
    "require": {

@@ -89,6 +89,13 @@ abstract class Compiler {
         return $result;
     }
 
+    /**
+     * Compile a template comment.
+     *
+     * @param array $node
+     * @param int $indent
+     * @return string
+     */
     public function comment($node, $indent) {
         // Do nothing for comments.
     }

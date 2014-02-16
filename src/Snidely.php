@@ -138,8 +138,8 @@ class Snidely {
     }
 
     public function parse($template) {
-        $tokenizer = new \Snidely\Tokenizer();
-        $parser = new \Snidely\Parser();
+        $tokenizer = new Tokenizer();
+        $parser = new Parser();
 
 //      die(json_encode($tokenizer->argsTokenizer->scan('.')));
 

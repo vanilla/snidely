@@ -55,7 +55,7 @@ class Scope implements \ArrayAccess {
 
     /**
      * Get the data data from the given key.
-     * @param name $key
+     * @param string $key
      * @return mixed|null
      */
     public function data($key) {

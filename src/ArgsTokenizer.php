@@ -134,20 +134,6 @@ class ArgsTokenizer {
     }
 
     /**
-     * Get the single name from the
-     * @param type $tokens
-     */
-//   public function getName($tokens) {
-//       foreach ($tokens as $token) {
-//           switch ($token[Tokenizer::TYPE]) {
-//               case Tokenizer::T_VAR:
-//                   return $token[Tokenizer::VALUE];
-//           }
-//       }
-//       return '';
-//   }
-
-    /**
      * Helper function to reset tokenizer internal state.
      *
      * @return void

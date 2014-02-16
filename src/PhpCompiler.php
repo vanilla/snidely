@@ -28,7 +28,13 @@ class PhpCompiler extends Compiler {
 
     protected $helpersClass;
 
+    /**
+     * @var string The sprintf format to use to when rendering escaped strings.
+     */
     protected $escapeFormat = 'htmlspecialchars(%s)';
+    /**
+     * @var string The sprintd format to use when rendering unescaped strings.
+     */
     protected $unescapeFormat = '%s';
 
     /// Methods ///
@@ -223,7 +229,6 @@ class PhpCompiler extends Compiler {
 
         // Is there an inverse section.
         if (!empty($node[Tokenizer::INVERSE])) {
-            // TODO: This has to be rendered as a closure.
             $options['inverse'] = $this->compileClosure($node[Tokenizer::INVERSE], $indent);
         }
 
@@ -249,7 +254,7 @@ class PhpCompiler extends Compiler {
      *
      * @param array $node
      * @param int $indent
-     * @param type $helper
+     * @param callable|string $helper
      * @return string|null
      */
     public function helper($node, $indent, $helper) {
@@ -369,7 +374,7 @@ class PhpCompiler extends Compiler {
                     break;
                 case Tokenizer::T_UNESCAPED:
                 case Tokenizer::T_UNESCAPED_2:
-                    $result .= $this->str(sprintf($this->unescapeFormt, $call), $indent - 1);
+                    $result .= $this->str(sprintf($this->unescapeFormat, $call), $indent - 1);
                     break;
                 default;
                     $result .= "\n"

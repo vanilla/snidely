@@ -94,6 +94,10 @@ class Helpers {
         return json_encode($context, $pretty | JSON_UNESCAPED_SLASHES);
     }
 
+    public static function noop() {
+
+    }
+
     protected static function registerHelper(Snidely $snidely, $name, $fname = null) {
         if ($fname === null)
             $fname = $name;

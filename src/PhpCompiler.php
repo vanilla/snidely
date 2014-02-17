@@ -79,7 +79,7 @@ class PhpCompiler extends Compiler {
     public function compile($nodes) {
         $result = $this->php(true)
                 . "namespace Snidely {\n\n"
-                . "return function(\$context) use (\$snidely) {\n"
+                . "return function(\$context, \$options = []) use (\$snidely) {\n"
                 . $this->indent(1).'$scope = new Scope($context);'."\n\n"
                 . $this->compileClosure($nodes, 0, false)
                 . $this->str().$this->php(true)."};\n"

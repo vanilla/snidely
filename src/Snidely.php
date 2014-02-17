@@ -99,7 +99,7 @@ class Snidely {
      * @param mixed $data
      * @return string
      */
-    public function fetch(callable $compiled_template, $data) {
+    public function fetch(callable $compiled_template, $data, $options = null) {
         try {
             ob_start();
             $this->pushErrorReporting();
@@ -151,13 +151,13 @@ class Snidely {
 
     public function partial($name, $context, Scope $scope) {
         if (isset($this->partials[$name])) {
-            call_user_func($this->partials[$name], $context, $this);
+            call_user_func($this->partials[$name], $context);
         } else {
             foreach ($this->partialLoaders as $callback) {
                 $partial = $callback($name, $context, $scope, $this);
 
                 if ($partial !== null) {
-                    call_user_func($partial, $context, $this);
+                    call_user_func($partial, $context);
                 }
             }
         }

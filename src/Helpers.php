@@ -94,6 +94,16 @@ class Helpers {
         return json_encode($context, $pretty | JSON_UNESCAPED_SLASHES);
     }
 
+    public static function lookup($context, $index) {
+        if (is_array($context) || is_string($context)) {
+            if ($index instanceof ValueContext)
+                $index = $index->value;
+
+            return $context[$index];
+        }
+        return '';
+    }
+
     public static function noop() {
 
     }
@@ -109,6 +119,7 @@ class Helpers {
         static::registerHelper($snidely, 'iif');
         static::registerHelper($snidely, 'join');
         static::registerHelper($snidely, 'json');
+        static::registerHelper($snidely, 'lookup');
         static::registerHelper($snidely, 'section');
         static::registerHelper($snidely, 'with');
     }

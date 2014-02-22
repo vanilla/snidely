@@ -177,11 +177,13 @@ class Snidely {
         }
     }
 
-    public function registerHelper($name, $callback = null) {
+    public function registerHelper($name, $callback = null, array $options = []) {
         if (!$callback)
             $callback = $name;
 
-        $this->helpers[$name] = $callback;
+        if (!isset($options['overwrite']) || $options['overwrite'] || !isset($this->helpers[$name])) {
+            $this->helpers[$name] = $callback;
+        }
     }
 
     /**

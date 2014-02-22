@@ -111,7 +111,7 @@ class Helpers {
     protected static function registerHelper(Snidely $snidely, $name, $fname = null) {
         if ($fname === null)
             $fname = $name;
-        $snidely->registerHelper($name, ['\\'.get_called_class(), $fname]);
+        $snidely->registerHelper($name, ['\\'.get_called_class(), $fname], ['overwrite' => false]);
     }
 
     public static function registerHelpers(Snidely $snidely) {
@@ -125,12 +125,10 @@ class Helpers {
     }
 
     public static function registerBuiltInHelers(Snidely $snidely) {
-        $snidely->registerHelper('count', 'count');
-//        $snidely->registerHelper('fist', 'reset');
-//        $snidely->registerHelper('last', 'end');
-        $snidely->registerHelper('lowercase', 'strtolower');
-        $snidely->registerHelper('titleize', 'ucwords');
-        $snidely->registerHelper('uppercase', 'strtoupper');
+        $snidely->registerHelper('count', 'count', ['overwrite' => false]);
+        $snidely->registerHelper('lowercase', 'strtolower', ['overwrite' => false]);
+        $snidely->registerHelper('titleize', 'ucwords', ['overwrite' => false]);
+        $snidely->registerHelper('uppercase', 'strtoupper', ['overwrite' => false]);
     }
 
     /**

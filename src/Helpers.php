@@ -94,6 +94,36 @@ class Helpers {
         return json_encode($context, $pretty | JSON_UNESCAPED_SLASHES);
     }
 
+    /**
+     * Converts a value to a string in a way that is compatible with javascript.
+     * @param mixed $value The value to convert to a string.
+     * @param bool $literal_false Whether or not to return 'false' for a boolean false value.
+     * @return string Returns the string version of `$value`.
+     */
+    public static function jstr($value, $literal_false = true) {
+        // The ValueContext just does a simple string cast so make sure we override that.
+        if ($value instanceof ValueContext) {
+            $value = $value->value;
+        }
+
+        if ($value === true) {
+            return 'true';
+        } elseif ($value === false) {
+            return $literal_false ? 'false' : '';
+        } elseif (is_array($value)) {
+            if (empty($value)) {
+                return '';
+            } elseif (isset($value[0])) {
+                $value = array_map(function($value) { return static::str($value, true); }, $value);
+                return implode(',', $value);
+            } else {
+                return '[object Object]';
+            }
+        }
+
+        return (string)$value;
+    }
+
     public static function lookup($context, $index) {
         if (is_array($context) || is_string($context)) {
             if ($index instanceof ValueContext)

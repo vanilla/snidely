@@ -204,7 +204,7 @@ class Tokenizer {
                             $args_str = trim($this->buffer);
 
                             $t[self::ARGS_STR] = $args_str;
-                            $t[self::ARGS] = $this->argsTokenizer->scan($args_str);
+                            $t[self::ARGS] = $this->argsTokenizer->scan($args_str, $t);
 
                             $nameParts = explode(' ', trim($this->buffer), 2);
                             $t[self::NAME] = $nameParts[0]; //

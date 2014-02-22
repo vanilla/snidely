@@ -25,7 +25,7 @@ class ArgsTokenizer {
 
     /// Methods ///
 
-    public function scan($text) {
+    public function scan($text, $node) {
         $this->reset();
 
         $strlen = strlen($text);
@@ -44,8 +44,13 @@ class ArgsTokenizer {
                     break;
                 case self::IN_STRING: // "string"
                     if ($c === Tokenizer::T_QUOTE || $c === Tokenizer::T_QUOTE2) {
-                        $this->flushBuffer(Tokenizer::T_STRING);
-                        $this->state = self::IN_VAR;
+                        if (substr($this->buffer, -1) === Tokenizer::T_ESCAPE_CHAR) {
+                            // This is a quote that was escaped.
+                            $this->buffer = substr($this->buffer, 0, -1).$c;
+                        } else {
+                            $this->flushBuffer(Tokenizer::T_STRING);
+                            $this->state = self::IN_VAR;
+                        }
                     } else {
                         $this->buffer .= $c;
                     }
@@ -88,6 +93,9 @@ class ArgsTokenizer {
                             break;
                         case Tokenizer::T_QUOTE: // open quote " or '
                         case Tokenizer::T_QUOTE2:
+                            if ($this->buffer) {
+                                throw new SyntaxException('Quote found in the middle of parameter: '.$text, $node);
+                            }
                             $this->flushBuffer();
                             $this->state = self::IN_STRING;
                             break;

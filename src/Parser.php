@@ -82,18 +82,25 @@ class Parser {
     /**
      * Look to convert an argument to a literal value.
      * @param array $arg
+     * @param array $node
      * @return array
      */
     protected function buildArg($arg, $node) {
         if (count($arg) === 1 && $arg[0][Tokenizer::TYPE] === Tokenizer::T_VAR) {
             // This is a candidate for a literal.
+            $tval = $arg[0][Tokenizer::VALUE];
             $val = '';
-            switch ($arg[0][Tokenizer::VALUE]) {
+            switch ($tval) {
                 case Tokenizer::T_LITERAL_TRUE:
                     $val = true;
                     break;
                 case Tokenizer::T_LITERAL_FALSE:
                     $val = false;
+                    break;
+                default:
+                    if (is_numeric($tval)) {
+                        $val = (float)$tval;
+                    }
                     break;
             }
 

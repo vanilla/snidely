@@ -99,7 +99,10 @@ class ArgsTokenizer {
                         case Tokenizer::T_SLASH:
                         case Tokenizer::T_DOT:
                             if ($this->buffer) {
-                                if ($this->buffer === 'this') {
+                                if (is_numeric($this->buffer) && $c === Tokenizer::T_DOT && strpos($this->buffer, '.') === false) {
+                                    // This is a decimal in a numeric literal.
+                                    $this->buffer .= $c;
+                                } elseif ($this->buffer === 'this') {
                                     $this->flushBuffer(Tokenizer::T_DOT);
                                 } else {
                                     $this->flushBuffer();

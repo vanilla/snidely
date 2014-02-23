@@ -11,9 +11,7 @@
 namespace Snidely;
 
 /**
- * Mustache Tokenizer class.
- *
- * This class is responsible for turning raw template source into a set of Mustache tokens.
+ * This class is responsible for turning raw template source into a set of tokens.
  */
 class Tokenizer {
 

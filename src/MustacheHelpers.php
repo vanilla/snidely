@@ -8,7 +8,9 @@
 
 namespace Snidely;
 
-
+/**
+ * Contains helper functions for mustache compatibility.
+ */
 class MustacheHelpers extends Helpers {
 
     /**

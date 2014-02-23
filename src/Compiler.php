@@ -8,6 +8,9 @@
 
 namespace Snidely;
 
+/**
+ * The base snidely compiler class.
+ */
 abstract class Compiler {
 
     /// Properties ///

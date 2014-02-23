@@ -8,6 +8,9 @@
 
 namespace Snidely;
 
+/**
+ * Encapsulates template context data into a stack of scopes to help traversing deep into data structures.
+ */
 class Scope implements \ArrayAccess {
     /// Properties ///
 

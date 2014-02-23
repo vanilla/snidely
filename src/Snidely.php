@@ -8,6 +8,9 @@
 
 namespace Snidely;
 
+/**
+ * The snidely template engine.
+ */
 class Snidely {
     /// Properties ///
 

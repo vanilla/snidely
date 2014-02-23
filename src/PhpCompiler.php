@@ -8,6 +8,9 @@
 
 namespace Snidely;
 
+/**
+ * This class is responsible for compiling snidely templates into php functions.
+ */
 class PhpCompiler extends Compiler {
 
     const MUSTACHE_CONTEXT = 0x1;

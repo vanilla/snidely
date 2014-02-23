@@ -8,6 +8,9 @@
 
 namespace Snidely;
 
+/**
+ * Scans the strings inside a snidely tag and splits it into argument tokens.
+ */
 class ArgsTokenizer {
     const IN_VAR = 0;
     const IN_LITERAL = 1;

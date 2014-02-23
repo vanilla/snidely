@@ -8,6 +8,9 @@
 
 namespace Snidely;
 
+/**
+ * Contains helper functions for template runtime execution.
+ */
 class Helpers {
     /// Methods ///
 
@@ -73,6 +76,13 @@ class Helpers {
         }
     }
 
+    /**
+     * Performs an inline if statement.
+     * @param mixed $context The context being examined.
+     * @param mixed $then What to return if `$context` is true.
+     * @param mixed $else What to return if `$context is false.
+     * @return mixed Returns either `$then` or `$else`.
+     */
     public static function iif($context, $then, $else) {
         if ($context) {
             return $then;
@@ -81,13 +91,27 @@ class Helpers {
         }
     }
 
+    /**
+     * Performs an array join.
+     *
+     * This is analogous to the php {$link implode()} function.
+     * @param array $context The array to join.
+     * @param string $sep The character used to seperate array elements.
+     * @return string Returns the joined array.
+     */
     public static function join($context, $sep = ',') {
         if (is_array($context))
-            echo implode($sep, $context);
+            return implode($sep, $context);
         else
-            echo $context;
+            return (string)$context;
     }
 
+    /**
+     * JSON encodes an array.
+     * @param mixed $context The context to encode.
+     * @param bool $pretty Whether the output should be pretty printed.
+     * @return string Returns the json encoded string.
+     */
     public static function json($context, $pretty = true) {
         $pretty = $pretty ? JSON_PRETTY_PRINT : 0;
 
@@ -124,26 +148,49 @@ class Helpers {
         return (string)$value;
     }
 
-    public static function lookup($context, $index) {
+    /**
+     * Looks up an index in an array and returns the result.
+     *
+     * @param array|string $context The array or string to search.
+     * @param int|string $index The index within the array or string to find.
+     * @param mixed $default a default value to return if the index isn't found.
+     * @return mixed Returns the found value or `$default` if it isn't found.
+     */
+    public static function lookup($context, $index, $default = '') {
         if (is_array($context) || is_string($context)) {
             if ($index instanceof ValueContext)
                 $index = $index->value;
 
             return $context[$index];
         }
-        return '';
+        return $default;
     }
 
+    /**
+     * Performs no operation.
+     *
+     * This method is useful if you need to pass a callable to a function, but don't want to do anything.
+     */
     public static function noop() {
 
     }
 
+    /**
+     * Register a helper in this class to a {@link Snidely} instance.
+     * @param Snidely $snidely The {@link Snidely} instance to register the helper with.
+     * @param string $name The alias of the helper.
+     * @param string $fname The name of the method if different than `$name`.
+     */
     protected static function registerHelper(Snidely $snidely, $name, $fname = null) {
         if ($fname === null)
             $fname = $name;
         $snidely->registerHelper($name, ['\\'.get_called_class(), $fname], ['overwrite' => false]);
     }
 
+    /**
+     * Register all of the helpers in this class with a {@link Snidely} instance.
+     * @param Snidely $snidely The {@link Snidely} instance to register the helpers with.
+     */
     public static function registerHelpers(Snidely $snidely) {
         static::registerHelper($snidely, 'each');
         static::registerHelper($snidely, 'iif');
@@ -154,6 +201,10 @@ class Helpers {
         static::registerHelper($snidely, 'with');
     }
 
+    /**
+     * Register some built in php functions with a {@link Snidely} instance.
+     * @param Snidely $snidely The {@link Snidely} instance to register the helpers with.
+     */
     public static function registerBuiltInHelers(Snidely $snidely) {
         $snidely->registerHelper('count', 'count', ['overwrite' => false]);
         $snidely->registerHelper('lowercase', 'strtolower', ['overwrite' => false]);
@@ -193,10 +244,23 @@ class Helpers {
         }
     }
 
+    /**
+     * Returns whether or not a value is a truthy value.
+     * @param mixed $context The value to test.
+     * @return bool Returns `true` if the value is true or a value that can represent true (such as 1).
+     */
     public static function truthy($context) {
         return $context === true || $context === 1 || $context === "1";
     }
 
+    /**
+     * Invokes a template block with a given context.
+     *
+     * @param mixed $context The context to invoke the block against.
+     * @param Scope $scope The current scope.
+     * @param mixed $prev The previous context.
+     * @param array $options Options that have been passed to this helper.
+     */
     public static function with($context, Scope $scope, $prev, $options) {
         if (empty($context))
             return;

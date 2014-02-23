@@ -8,6 +8,9 @@
 
 namespace Snidely;
 
+/**
+ * Contains helper functions for handlebars.js compatibility.
+ */
 class HandlebarsHelpers extends Helpers {
 
 //    /**

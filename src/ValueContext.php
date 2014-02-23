@@ -10,7 +10,6 @@ namespace Snidely;
 
 /**
  * A class that protects atomic values from being accessed like an array.
- * @package Snidely
  */
 class ValueContext implements \ArrayAccess, \JsonSerializable {
 

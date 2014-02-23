@@ -11,7 +11,7 @@
 namespace Snidely;
 
 /**
- * Snidely syntax exception.
+ * Snidely syntax exception throws when templates are malformed.
  */
 class SyntaxException extends \Exception {
     protected $token;

@@ -95,7 +95,7 @@ class PhpCompiler extends Compiler {
         $result = $this->php(true);
 
         if ($declaration)
-            $result .= "function(\$context, \$scope) use (\$snidely) {\n";
+            $result .= "function(\$context) use (\$snidely, \$scope) {\n";
         $result .= $this->compileNodes($nodes, $indent + 1);
         if ($declaration)
             $result .= $this->str().$this->php(true, $indent) . '}';

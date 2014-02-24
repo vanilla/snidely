@@ -17,6 +17,7 @@ class MustacheHelpers extends Helpers {
      * A helper that implements the runtime of block sections.
      * @param array $context
      * @param Scope $scope
+     * @param mixed $prev
      * @param array $options
      */
     public static function section($context, Scope $scope, $prev, $options) {
@@ -27,11 +28,7 @@ class MustacheHelpers extends Helpers {
                 // This is a numeric array and is looped.
 
                 // Push a placeholder for the loop.
-//                $scope->push();
-//                $scope->pushData();
-
-                // Handlebars doesn't allow parent traversal within loops.
-                $scope = new Scope($context, $scope->root);
+                $scope->push();
                 $scope->pushData();
 
                 $i = 0;
@@ -48,12 +45,12 @@ class MustacheHelpers extends Helpers {
 
 
                     $fn = $options['fn'];
-                    $fn($context_row, $scope, $key);
+                    $fn($context_row);
 
                     $i++;
                 }
 
-//                $scope->pop();
+                $scope->pop();
                 $scope->popData();
             } else {
                 // This is an object-like array and is like a with.

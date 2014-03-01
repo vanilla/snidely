@@ -41,6 +41,12 @@ EOT;
         $this->shouldCompileTo(__FUNCTION__, '{{../../foo}}', ['foo' => 'bar'], '');
     }
 
+    public function testStringEscapeError() {
+        $this->setExpectedException('\Exception');
+        $snidely = $this->snidely();
+        $snidely->compile('Message: {{hello wo"rld"}}');
+    }
+
     /**
      * @param string $template
      * @param string $expected

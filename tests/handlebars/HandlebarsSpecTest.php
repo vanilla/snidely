@@ -24,8 +24,32 @@ class HandlebarsSpecTest extends PHPUnit_Framework_TestCase {
         '#if-if with function argument-01' => 'Context functions not supported.',
         '#with-with with function argument-00' => 'Context functions not supported.',
         '#each-each with function argument-00' => 1,
-        '#each-data passed to helpers-00' => "Data isn't currently passed through the scope."
+        '#each-data passed to helpers-00' => "Data isn't currently passed through the scope.",
 
+        // Helpers
+        'helpers-helper for raw block gets raw content-00' => 'Raw helpers not supported.',
+        'helpers-helper for raw block gets parameters-00' => 'Raw helpers not supported.',
+        'helpermissing-if a context is not found, custom helpermissing is used-00' => 'nc',
+
+        // String literals
+        'string literal parameters-it works with \' marks-00' => 'nc',
+        'knownhelpers-known helper should render helper-00' => 'nc',
+        'knownhelpers-unknown helper in knownhelpers only mode should be passed as undefined-00' => 'nc',
+        'name field-should include in ambiguous mustache calls-00' => 'nc',
+        'name field-should include in helper mustache calls-00' => 'nc',
+        'name field-should include in ambiguous block calls-00' => 'nc',
+        'name field-should include in simple block calls-00' => 'nc',
+        'name field-should include in helper block calls-00' => 'nc',
+        'name field-should include in known helper calls-00' => 'nc',
+        'name field-should include full id-00' => 'nc',
+        'name conflicts-helpers take precedence over same-named context properties-00' => 'nc',
+        'name conflicts-helpers take precedence over same-named context properties$-00' => 'nc',
+        'name conflicts-scoped names take precedence over helpers-00' => 'nc',
+        'name conflicts-scoped names take precedence over block helpers-00' => 'nc',
+        'helpermissing-if a context is not found, helpermissing is used-00' => 'nc',
+        'knownhelpers-functions are bound to the context in knownhelpers only mode-00' => 'nc',
+        'knownhelpers-unknown helper call in knownhelpers only mode should throw-00' => 'nc',
+        'blockhelpermissing-lambdas are resolved by blockhelpermissing, not handlebars proper-00' => 'nc',
     ];
 
     /**
@@ -80,7 +104,8 @@ class HandlebarsSpecTest extends PHPUnit_Framework_TestCase {
                     eval("\$helper_fn = {$defs['php']};");
                     $snidely->registerHelper($fname, $helper_fn);
                 } else {
-                    $this->markTestIncomplete("No definition for helper $fname.");
+                    throw new \Exception("No definition for helper $fname.");
+//                    $this->markTestIncomplete("No definition for helper $fname.");
                 }
             }
         }
@@ -161,9 +186,9 @@ class HandlebarsSpecTest extends PHPUnit_Framework_TestCase {
      * @param $name
      * @param $spec
      */
-//    public function testHelpers($name, $spec) {
-//        $this->runSpec($name, $spec);
-//    }
+    public function testHelpers($name, $spec) {
+        $this->runSpec($name, $spec);
+    }
 
     /**
      * @dataProvider providePartials

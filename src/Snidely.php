@@ -91,7 +91,12 @@ class Snidely {
 
     public function precompile($template) {
         $nodes = $this->parse($template);
-        $compiler = new PhpCompiler($this, $this->compilerFlags);
+
+        if ($this->compilerFlags & Compiler::STANDLONE) {
+            $compiler = new PhpStandaloneCompiler($this, $this->compilerFlags);
+        } else {
+            $compiler = new PhpCompiler($this, $this->compilerFlags);
+        }
 
         return $compiler->compile($nodes);
     }
@@ -181,8 +186,9 @@ class Snidely {
     }
 
     public function registerHelper($name, $callback = null, array $options = []) {
-        if (!$callback)
+        if (!$callback) {
             $callback = $name;
+        }
 
         if (!isset($options['overwrite']) || $options['overwrite'] || !isset($this->helpers[$name])) {
             $this->helpers[$name] = $callback;

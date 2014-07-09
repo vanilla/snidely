@@ -1,0 +1,15 @@
+<ul>
+{{#each discussions}}
+    <li>
+      <h3><a href="{{url}}">{{name}}</a></h3>
+      <div>
+        by {{user.name}} on {{date "r" timestamp}} in {{../category}} {{#each tags}}{{tag}} {{/each}}
+      </div>
+      <div>
+        {{bodyHtml}}
+      </div>
+    </li>
+{{else}}
+    <li>No discussions yet!</li>
+{{/each}}
+</ul>

@@ -12,22 +12,12 @@ namespace Snidely;
  * This class is responsible for compiling snidely templates into php functions.
  */
 class PhpCompiler extends Compiler {
-
-    const MUSTACHE_CONTEXT = 0x1;
-    const MUSTACHE_HELPERS = 0x2;
-    const MUSTACHE = 0xF;
-
-    const HANDLEBARS_IF = 0x100; // whether or not to push the scope on if statements.
-    const HANDLEBARS_HELPERS = 0x200;
-    const HANDLEBARS_JS_STRINGS = 0x400; // whether or not to return javascript compatible handlebars strings.
-    const HANDLEBARS = 0xF00;
-
     /// Properties ///
 
     protected $flags = 0;
-
     protected $php = true;
     protected $str = false;
+    protected $depth = 0;
 
     protected $helpersClass;
 
@@ -66,7 +56,9 @@ class PhpCompiler extends Compiler {
 //        $this->snidely->registerHelper('each', ['\Snidely\Snidely', 'each']);
 //        $this->snidely->registerHelper('with', ['\Snidely\Snidely', 'with']);
 
-        call_user_func(array($this->helpersClass, 'registerHelpers'), $this->snidely);
+        if (!($this->flags & self::STANDLONE)) {
+            call_user_func(array($this->helpersClass, 'registerHelpers'), $this->snidely);
+        }
         call_user_func(array($this->helpersClass, 'registerBuiltInHelers'), $this->snidely);
     }
 
@@ -122,7 +114,7 @@ class PhpCompiler extends Compiler {
 
     public function escaped($node, $indent) {
         $result = $this->php(true) .
-                $this->indent($indent) .
+//                $this->indent($indent) .
                 $this->str(
                     sprintf($this->escapeFormat, $this->getContext($node)),
                     $indent);
@@ -131,13 +123,15 @@ class PhpCompiler extends Compiler {
     }
 
     public function getContext($path, $i = 0, $node = null) {
-        if (isset($path[Tokenizer::ARGS]))
+        if (isset($path[Tokenizer::ARGS])) {
             $path = $path[Tokenizer::ARGS][$i];
+        }
 
-        if ($this->flags & self::MUSTACHE_CONTEXT)
+        if ($this->flags & self::MUSTACHE_CONTEXT) {
             $var = '$scope';
-        else
-            $var = '$context';
+        } else {
+            $var = $this->getContextVar();
+        }
 
         $paren = ['[', ']'];
         $first = true;
@@ -158,18 +152,13 @@ class PhpCompiler extends Compiler {
                         case '.':
                         case 'this':
                             if ($first) {
-                                $var = '$context';
+                                $var = $this->getContextVar();
                             }
                             break;
                         case '..':
                             $root_count++;
 
-                            if ($root_count === 1) {
-                                $var = '$scope->root';
-                            } else {
-                                $var = "\$scope->root(-$root_count)";
-                            }
-                            $var = "\$scope->root(-$root_count)";
+                            $var = $this->getContextVar($root_count); //"\$scope->root(-$root_count)";
 
                             break;
                     }
@@ -178,7 +167,7 @@ class PhpCompiler extends Compiler {
                 case Tokenizer::T_VAR:
                     if ($first && $value === 'this') {
                         // this is a synonym for "."
-                        $var = '$context';
+                        $var = $this->getContextVar();
                     } elseif (in_array($value, array('@key', '@index', '@first', '@last'))) {
                         // These are special variables that refer to the index of a loop.
                         if (count($path) == 1) {
@@ -202,7 +191,22 @@ class PhpCompiler extends Compiler {
             $first = false;
         }
 
-        return $var . $result;
+        return $var.$result;
+    }
+
+    /**
+     * Return the variable to grab the context data from.
+     *
+     * @param int $parent The relative level to the current context.
+     * 0 for current, 1 for the parent, 2 for the grandparent, etc.
+     * @return string Returns the variable string.
+     */
+    protected function getContextVar($parent = 0) {
+        if ($parent === 0) {
+            return '$context';
+        } else {
+            return "\$scope->root(-$parent)";
+        }
     }
 
     /**
@@ -265,10 +269,6 @@ class PhpCompiler extends Compiler {
         $call = null;
         $params = null;
         $call_comma = '';
-
-        if ($node['name'] === 'awesome') {
-            $foo = 'bar';
-        }
 
         // Try and make the helper call nice.
         if (is_string($helper)) {
@@ -334,7 +334,7 @@ class PhpCompiler extends Compiler {
                     // This argument takes the current context or the scope.
                     $args[$i] = '$'.strtolower($param_name);
                 } elseif (strtolower($param_name) === 'prev') {
-                    $args[$i] = '$context';
+                    $args[$i] = $this->getContextVar();
                 } elseif (strtolower($param_name) === 'options') {
                     $args[$i] = $this->getOptions($node, $indent, true);
                     $options_passed = true;

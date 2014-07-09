@@ -12,10 +12,20 @@ namespace Snidely;
  * The base snidely compiler class.
  */
 abstract class Compiler {
+    const MUSTACHE_CONTEXT = 0x1;
+    const MUSTACHE_HELPERS = 0x2;
+    const MUSTACHE = 0xF;
+
+    const HANDLEBARS_IF = 0x100; // whether or not to push the scope on if statements.
+    const HANDLEBARS_HELPERS = 0x200;
+    const HANDLEBARS_JS_STRINGS = 0x400; // whether or not to return javascript compatible handlebars strings.
+    const HANDLEBARS = 0xF00;
+
+    const STANDLONE = 0x1000;
 
     /// Properties ///
 
-    public $indent = 0;
+//    public $indent = 0;
 
     /**
      *

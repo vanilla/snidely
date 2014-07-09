@@ -23,6 +23,9 @@ and open the template in the editor.
         <testsuite name="mustache">
             <directory suffix="Test.php">mustache</directory>
         </testsuite>
+        <testsuite name="Standalone">
+            <directory suffix="Test.php">Standalone</directory>
+        </testsuite>
     </testsuites>
 
     <!--<logging>-->

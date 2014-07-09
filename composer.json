@@ -1,5 +1,5 @@
 {
-   "name": "vanillaforums/snidely",
+   "name": "vanilla/snidely",
    "type": "library",
    "description": "A handlebars.js like templating engine optimized for php.",
    "keywords": ["php", "handlebars", "mustache"],

@@ -1,0 +1,116 @@
+{{#with site}}
+  <!-- summary -->
+  <div class="summary">
+    <div class="name">
+      <div><span class="prefix">{{prefix}}</span>.{{suffix}}</div>
+      <a class="visit" href="http://{{name}}" alt="visit {{name}}" target="_blank"><i class="icon icon-external-link"></i></a>
+      <!-- /summary -->
+    </div>
+
+    <div class="gutter">
+
+      <div class="information">
+        <div class="snippet bold snippet-cluster">
+          <div class="label">cluster</div>
+          <div class="value"><a href="/clusters/view/{{cluster}}">{{cluster}}</a></div>
+        </div>
+
+        <div class="snippet bold snippet-database">
+          <div class="label">database</div>
+          <div class="value">{{database}}</div>
+        </div>
+
+        <div class="snippet snippet-account">
+          <div class="label">account id</div>
+          <div class="value"><a href="https://www.vanillaforums.com/account/{{accountid}}">{{accountid}}</a></div>
+        </div>
+
+        <div class="snippet snippet-site">
+          <div class="label">site id</div>
+          <div class="value">{{siteid}}</div>
+        </div>
+
+        <div class="snippet snippet-class is-{{plan.class}}">
+          <div class="label">class</div>
+          <div class="value">{{plan.class}}</div>
+        </div>
+      </div>
+
+      <div class="tools">
+        <div class="tool tool-edit"><a href="/sites/edit/{{siteid}}"><i class="icon icon-cog"></i> edit</a></div>
+        <div class="tool tool-rename"><a href="/sites/rename/{{siteid}}" class="Popup"><i class="icon icon-pencil"></i> rename</a></div>
+        <div class="tool tool-move"><a href="/sites/move/{{siteid}}" class="Popup"><i class="icon icon-cloud-upload"></i> move</a></div>
+        <div class="tool tool-delete"><a href="/sites/delete/{{siteid}}"><i class="icon icon-ban"></i> delete</a></div>
+        <div class="tool tool-sphinx"><a href="/sites/sphinx/{{siteid}}" class="Popup"><i class="icon icon-eye-open"></i> sphinx</a></div>
+
+        <div class="tool tool-flush js-livetool"><a href="/sites/flush/{{siteid}}"><i class="icon icon-flame"></i> flush cache</a></div>
+        <div class="tool tool-reload js-livetool"><a href="/sites/reload/{{siteid}}"><i class="icon icon-refresh"></i> reload config</a></div>
+        <div class="tool tool-update js-livetool"><a href="/sites/update/{{siteid}}"><i class="icon icon-cogs"></i> utility update</a></div>
+      </div>
+
+    </div>
+    <!-- /gutter -->
+
+      {{#each states}}<div class="maintenance">
+        <div class="state tool state-debug state-{{debug}} js-livestate"><a href="/sites/toggle/{{siteid}}/debug"><i class="icon icon-bug"></i> debug mode</a></div>
+        <div class="state tool state-maintenance state-{{maintenance}} js-livestate"><a href="/sites/toggle/{{siteid}}/maintenance"><i class="icon icon-warning-sign"></i> maintenance</a></div>
+        <div class="state tool state-options state-{{options}} js-livestate"><a href="/sites/toggle/{{siteid}}/options"><i class="icon icon-eye-open"></i> options</a></div>
+        <div class="state tool state-spoof state-{{spoof}} js-livestate"><a href="/sites/toggle/{{siteid}}/spoof"><i class="icon icon-crown"></i> spoof</a></div>
+        <div class="state tool state-ads state-{{autodomain}} js-livestate"><a href="/sites/toggle/{{siteid}}/autodomain"><i class="icon icon-share"></i> auto domain</a></div>
+        <div class="state tool state-advanalytics state-{{advanalytics}} js-livestate"><a href="/sites/toggle/{{siteid}}/advanalytics"><i class="icon icon-globe"></i> adv analytics</a></div>
+      </div>{{/each}}
+    <!-- /states -->
+
+    <div class="authorized">
+        {{#each users}}<div class="user">
+          <div class="avatar"><img src="{{photo}}"/></div>
+          <div class="info">
+            <div class="name">{{name}} (<span class="class">{{class}}</span>)</div>
+            <div class="email">{{email}}</div>
+          </div>
+        </div>{{/each}}
+    </div>
+    <!-- /authorized -->
+
+      {{#with subscription}}<div class="subscription standing-{{standing}}">
+        <div class="name">
+          <div class="plan">{{name}}</div>
+          <div class="effective">since {{dateeffective}}</div>
+        </div>
+
+        <div class="information">
+          <div class="snippet snippet-subscriptionid">
+            <div class="label">subscription id</div>
+            <div class="value">{{paysubscriptionid}}</div>
+          </div>
+
+          <div class="snippet snippet-subscription">
+            <div class="label">subscription</div>
+            <div class="value">{{total}} / {{frequency}}</div>
+          </div>
+
+          <div class="snippet snippet-status">
+            <div class="label">status</div>
+            <div class="value">{{status}}</div>
+          </div>
+
+          <div class="snippet snippet-standing is-{{standing}}">
+            <div class="label">standing</div>
+            <div class="value">{{standing}}</div>
+          </div>
+
+            {{#if owing}}<div class="snippet snippet-owing">
+              <div class="label">owing</div>
+              <div class="value">${{owing}}</div>
+            </div>{{/if}}
+        </div>
+      </div>{{/with}}
+    <!-- /subscription -->
+
+      {{#if dns}}<div class="dns">
+
+      </div>{{/if}}
+    <!-- /dns -->
+
+  </div>
+{{/with}}

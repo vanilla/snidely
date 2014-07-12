@@ -15,7 +15,17 @@ class StandaloneComplilerTest extends \PHPUnit_Framework_TestCase {
         $snidely = $this->getSnidely();
         $template = file_get_contents(__DIR__.'/fixtures/discussions.hbs');
 
-        $fn = $snidely->compile($template);
+        $fn = $snidely->compile($template, 'discussions');
+    }
+
+    public function testViewSummary() {
+        $snidely = $this->getSnidely();
+        
+        $template = file_get_contents(__DIR__.'/fixtures/viewsummary.hbs');
+        $fn = $snidely->compile($template, 'viewsummary');
+
+        $template = file_get_contents(__DIR__.'/fixtures/viewsummary_sect.hbs');
+        $fn = $snidely->compile($template, 'viewsummary_sect');
     }
 
     /**

@@ -103,7 +103,7 @@ class PhpCompiler extends Compiler {
             }
         } else {
             if ($this->str) {
-                return "\n".$this->indent($indent).'   , '.$str;
+                return "\n".$this->indent($indent + 1).','.$str;
             } else {
                 $this->str = true;
                 return $this->indent($indent).'echo '.$str;

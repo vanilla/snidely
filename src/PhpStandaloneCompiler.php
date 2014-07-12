@@ -19,6 +19,7 @@ class PhpStandaloneCompiler extends PhpCompiler {
         $snidely->helpers = [];
 
         $this->registerCompileHelper('each', [$this, 'eachHelper']);
+        $this->registerCompileHelper('with', [$this, 'withHelper']);
     }
 
 
@@ -32,7 +33,14 @@ class PhpStandaloneCompiler extends PhpCompiler {
         return $result;
     }
 
-    protected function eachHelper($node, $indent) {
+    /**
+     * A helper that compiles `{{#each}}` nodes.
+     * 
+     * @param array $node The compiler node.
+     * @param int $indent The current indent.
+     * @return string Returns the compile php code for the code.
+     */
+    protected function eachHelper(array $node, $indent) {
         $result = $this->php(true).$this->str();
         $context = $this->getContext($node, 1);
         $this->depth++;
@@ -40,7 +48,7 @@ class PhpStandaloneCompiler extends PhpCompiler {
         $childIndex = '$i'.$this->depth;
         $childContext = '$depth'.$this->depth;
 
-        $result .= "\n";
+        $result .= "\n".$this->getSnidely($node, $indent)."\n";
 
         if (!empty($node[Tokenizer::INVERSE])) {
             $result .= $this->indent($indent)."if (empty({$context})) {\n";
@@ -50,8 +58,70 @@ class PhpStandaloneCompiler extends PhpCompiler {
 
         $result .= $this->indent($indent)."foreach ({$context} as {$childIndex} => {$childContext}) {\n";
         $result .= $this->compileNodes($node[Tokenizer::NODES], $indent + 1);
+        $result .= $this->str().$this->php(true, $indent)."}\n\n";
+
+        $this->depth--;
+
+        return $result;
+    }
+
+    public function section($node, $indent) {
+        $result = $this->php(true).$this->str();
+        $context = $this->getContext($node, 0);
+        $this->depth++;
+
+        $childIndex = '$i'.$this->depth;
+        $childContext = '$depth'.$this->depth;
+        $sectionContext = '$section'.$this->depth;
+
+        $result .= "\n".$this->getSnidely($node, $indent)."\n";
+
+        $result .= $this->indent($indent)."if ({$context}) {\n";
+        $indent++;
+
+        $result .= $this->indent($indent).
+                   "$sectionContext = is_array($context) && isset({$context}[0]) ? $context : [$context];\n";
+        $result .= $this->indent($indent)."foreach ({$sectionContext} as {$childIndex} => {$childContext}) {\n";
+        $result .= $this->compileNodes($node[Tokenizer::NODES], $indent + 1);
         $result .= $this->str().$this->php(true, $indent)."}\n";
-        $result .= "\n";
+
+        $indent--;
+        $result .= $this->str().$this->php(true, $indent)."}";
+
+        if (!empty($node[Tokenizer::INVERSE])) {
+            $result .= $this->indent($indent)." else {\n";
+            $result .= $this->compileNodes($node[Tokenizer::INVERSE], $indent + 1);
+            $result .= $this->str().$this->php(true, $indent)."}\n\n";
+        }
+
+        $this->depth--;
+
+        $result .= "\n\n";
+
+        return $result;
+    }
+
+    protected function withHelper($node, $indent) {
+        $result = $this->php(true).$this->str();
+        $context = $this->getContext($node, 1);
+        $this->depth++;
+        $childContext = '$depth'.$this->depth;
+
+        $result .= "\n".$this->getSnidely($node, $indent)."\n";
+
+        // Write the with variable assignment.
+        $result .= $this->php(true, $indent)."$childContext = $context;\n";
+
+        $result .= $this->indent($indent)."if ($childContext) {\n";
+        $result .= $this->compileNodes($node[Tokenizer::NODES], $indent + 1);
+        $result .= $this->str().$this->php(true, $indent)."}";
+
+        if (!empty($node[Tokenizer::INVERSE])) {
+            $result .= $this->indent($indent)." else {\n";
+            $result .= $this->compileNodes($node[Tokenizer::INVERSE], $indent + 1);
+            $result .= $this->str().$this->php(true, $indent)."}";
+        }
+        $result .= "\n\n";
 
         $this->depth--;
 

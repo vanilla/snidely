@@ -1,9 +1,11 @@
 <?php
 
+namespace Snidely\Tests\Handlebars;
+
 use Snidely\Snidely;
 use Snidely\Scope;
 
-class HandlebarsTest extends PHPUnit_Framework_TestCase {
+class HandlebarsTest extends \PHPUnit_Framework_TestCase {
     public $skip = array(
 //        '001-simple-vars-006' => 'Snidely doesn\'s support imploding array parameters.'
     );
@@ -25,7 +27,7 @@ class HandlebarsTest extends PHPUnit_Framework_TestCase {
 
         // Load and compile the template.
         $snidely = new Snidely();
-        $snidely->compilerFlags = \Snidely\PhpCompiler::HANDLEBARS;
+        $snidely->compilerFlags = \Snidely\PhpCompiler::HANDLEBARS | \Snidely\PhpCompiler::STANDLONE;
 
         $snidely->cachePath($cache_path = PATH_TEST_CACHE.'/HandlebarsTest');
         if (!file_exists($snidely->cachePath()))

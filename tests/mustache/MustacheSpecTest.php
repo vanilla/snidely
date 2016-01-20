@@ -1,10 +1,11 @@
 <?php
 
+namespace Snidely\Tests\Mustache;
+
 use Snidely\Snidely;
 use Snidely\PhpCompiler;
 
-
-class MustacheSpecTest extends PHPUnit_Framework_TestCase {
+class MustacheSpecTest extends \PHPUnit_Framework_TestCase {
     public $skip = array(
 //        'delimiters-sections' => 'Snidely does not support context stack traversal.',
         'partials-standalone-without-previous-line' => "Snidely doesn't indent partials.",

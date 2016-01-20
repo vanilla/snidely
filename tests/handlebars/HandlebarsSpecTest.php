@@ -1,12 +1,14 @@
 <?php
 
+namespace Snidely\Tests\Handlebars;
+
 use Snidely\Snidely;
 use Snidely\Scope;
 
-class HandlebarsSpecTest extends PHPUnit_Framework_TestCase {
+class HandlebarsSpecTest extends \PHPUnit_Framework_TestCase {
     public $skip = [
         // Basic
-        'basic context-functions returning safestrings shouldn\'t be escaped-00' => 0,
+        'basic context-functions returning safestrings shouldn\'t be escaped-00' => 'Safe string objects aren\'t supported',
         'basic context-functions-00' => 'Context functions not supported.',
         'basic context-functions-01' => 'Context functions not supported.',
         'basic context-functions with context argument-00' => 'Context functions not supported.',
@@ -93,14 +95,17 @@ class HandlebarsSpecTest extends PHPUnit_Framework_TestCase {
         $snidely->compilerFlags = \Snidely\PhpCompiler::HANDLEBARS;
 
         $snidely->cachePath($cache_path = PATH_TEST_CACHE.'/handlebars-spec');
-        if (!file_exists($snidely->cachePath()))
+        if (!file_exists($snidely->cachePath())) {
             mkdir($snidely->cachePath(), 0777, true);
+        }
 
         // Grab the helpers.
         if (isset($spec['helpers'])) {
             foreach ($spec['helpers'] as $fname => $defs) {
                 if (isset($defs['php'])) {
-                    $helper_fn = function() { return ''; };
+                    $helper_fn = function () {
+                        return '';
+                    };
                     eval("\$helper_fn = {$defs['php']};");
                     $snidely->registerHelper($fname, $helper_fn);
                 } else {
@@ -125,15 +130,17 @@ class HandlebarsSpecTest extends PHPUnit_Framework_TestCase {
         $fn = $snidely->compile($spec['template'], $this->sanitizeFilename($name));
 
         // Grab the data.
-        if (isset($spec['data']))
+        if (isset($spec['data'])) {
             $data = $spec['data'];
-        else
+        } else {
             $data = [];
+        }
 
-       if (isset($spec['options']))
-          $options = $spec['options'];
-       else
-          $options = [];
+        if (isset($spec['options'])) {
+            $options = $spec['options'];
+        } else {
+            $options = [];
+        }
 
         // Run the template.
         $actual = $snidely->fetch($fn, $data, $options);

@@ -1,20 +1,33 @@
 {
-   "name": "vanilla/snidely",
-   "type": "library",
-   "description": "A handlebars.js like templating engine optimized for php.",
-   "keywords": ["php", "handlebars", "mustache"],
-   "license": "MIT",
-   "authors": [
-       { "name": "Todd Burry", "email": "todd@vanillaforums.com", "role": "Developer" }
-   ],
-   "autoload": {
-      "psr-4": {
-          "Snidely\\": "src"
-          }
-   },
-   "require": {
-       "php": ">=5.4.0"
-   },
-   "require-dev": {
-   }
+  "name": "vanilla/snidely",
+  "type": "library",
+  "description": "A handlebars.js like templating engine optimized for php.",
+  "keywords": [
+    "php",
+    "handlebars",
+    "mustache"
+  ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Todd Burry",
+      "email": "todd@vanillaforums.com",
+      "role": "Developer"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Snidely\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Snidely\\Tests\\": "tests"
+    }
+  },
+  "require": {
+    "php": ">=5.4.0"
+  },
+  "require-dev": {
+  }
 }

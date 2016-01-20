@@ -84,18 +84,26 @@ class PhpStandaloneCompiler extends PhpCompiler {
 
         $result .= "\n".$this->getSnidely($node, $indent)."\n";
 
-        $result .= $this->indent($indent)."if ({$context}) {\n";
+        // Output the array case.
+        $result .= $this->indent($indent)."if (is_array({$context})) {\n";
         $indent++;
 
         $result .= $this->indent($indent).
-                   "$sectionContext = is_array($context) && isset({$context}[0]) ? $context : [$context];\n";
+            "$sectionContext = isset({$context}[0]) ? $context : [$context];\n";
         $result .= $this->indent($indent)."foreach ({$sectionContext} as {$childIndex} => {$childContext}) {\n";
         $result .= $this->compileNodes($node[Tokenizer::NODES], $indent + 1);
         $result .= $this->str().$this->php(true, $indent)."}\n";
 
         $indent--;
         $result .= $this->str().$this->php(true, $indent)."}";
+        $this->depth--;
 
+        // Output the if case.
+        $result .= " elseif ($context) {\n";
+        $result .= $this->compileNodes($node[Tokenizer::NODES], $indent + 1);
+        $result .= $this->str().$this->php(true, $indent)."}";
+
+        // Output the else case.
         if (!empty($node[Tokenizer::INVERSE])) {
             $result .= $this->indent($indent)." else {\n";
             $result .= $this->compileNodes($node[Tokenizer::INVERSE], $indent + 1);
@@ -113,7 +121,7 @@ class PhpStandaloneCompiler extends PhpCompiler {
         $result = $this->php(true).$this->str();
         $context = $this->getContext($node, 1);
         $this->depth++;
-        $childContext = '$depth'.$this->depth;
+        $childContext = $this->getContextVarFromDepth($this->depth);
 
         $result .= "\n".$this->getSnidely($node, $indent)."\n";
 

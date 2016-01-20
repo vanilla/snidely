@@ -67,8 +67,9 @@ class Snidely {
      * @return callable Returns a closure that will render the template when called.
      */
     public function compile($template, $key = null) {
-        if ($key === null)
+        if ($key === null) {
             $key = md5($template);
+        }
 
         $path = $this->cachePath()."/$key.php";
         if (true || !file_exists($path)) {

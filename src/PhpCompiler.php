@@ -45,8 +45,8 @@ class PhpCompiler extends Compiler {
         }
 
         if ($this->flags & self::HANDLEBARS_JS_STRINGS) {
-            $this->escapeFormat = 'HandlebarsHelpers::escapeStr(%s)';
-            $this->unescapeFormat = 'HandlebarsHelpers::str(%s)';
+            $this->escapeFormat = '\Snidely\HandlebarsHelpers::escapeStr(%s)';
+            $this->unescapeFormat = '\Snidely\HandlebarsHelpers::str(%s)';
         }
 
         if (!($this->flags & self::HANDLEBARS_IF)) {

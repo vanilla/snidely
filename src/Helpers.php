@@ -208,7 +208,8 @@ class Helpers {
     public static function registerBuiltInHelers(Snidely $snidely) {
         $snidely->registerHelper('count', 'count', ['overwrite' => false]);
         $snidely->registerHelper('lowercase', 'strtolower', ['overwrite' => false]);
-        $snidely->registerHelper('titleize', 'ucwords', ['overwrite' => false]);
+        $snidely->registerHelper('titlecase', 'ucwords', ['overwrite' => false]);
+        $snidely->registerHelper('ucwords', 'ucwords', ['overwrite' => false]);
         $snidely->registerHelper('uppercase', 'strtoupper', ['overwrite' => false]);
     }
 

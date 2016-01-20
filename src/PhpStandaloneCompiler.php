@@ -25,8 +25,8 @@ class PhpStandaloneCompiler extends PhpCompiler {
 
     public function compile($nodes) {
         $result = $this->php(true)
-            . "function(\$context) {\n"
-            . $this->indent(1).'$depth0 = $context;'."\n\n"
+            . "return function(\$context) {\n"
+//            . $this->indent(1).'$depth0 = $context;'."\n\n"
             . $this->compileClosure($nodes, 0, false)
             . $this->str().$this->php(true)."};\n";
 
@@ -46,7 +46,7 @@ class PhpStandaloneCompiler extends PhpCompiler {
         $this->depth++;
 
         $childIndex = '$i'.$this->depth;
-        $childContext = '$depth'.$this->depth;
+        $childContext = $this->getContextVarFromDepth($this->depth);
 
         $result .= "\n".$this->getSnidely($node, $indent)."\n";
 
@@ -65,14 +65,22 @@ class PhpStandaloneCompiler extends PhpCompiler {
         return $result;
     }
 
+    /**
+     * Compile a section.
+     *
+     * @param $node
+     * @param $indent
+     * @return string
+     * @throws \Exception
+     */
     public function section($node, $indent) {
         $result = $this->php(true).$this->str();
         $context = $this->getContext($node, 0);
         $this->depth++;
 
         $childIndex = '$i'.$this->depth;
-        $childContext = '$depth'.$this->depth;
-        $sectionContext = '$section'.$this->depth;
+        $childContext = $this->getContextVarFromDepth($this->depth);
+        $sectionContext = $this->getContextVarFromDepth($this->depth, '$section');
 
         $result .= "\n".$this->getSnidely($node, $indent)."\n";
 
@@ -137,6 +145,42 @@ class PhpStandaloneCompiler extends PhpCompiler {
      */
     protected function getContextVar($parent = 0) {
         $depth = max(0, $this->depth - $parent);
-        return '$depth'.$depth;
+        return $this->getContextVarFromDepth($depth);
+    }
+
+    /**
+     * Get the name of the context variable for the given depth.
+     *
+     * @param int $depth The depth to get the context from.
+     * @param string $px The variable prefix.
+     * @return string Returns the name of the context variable including the leading dollar sign.
+     */
+    private function getContextVarFromDepth($depth, $px = '$context') {
+        if ($depth === 0) {
+            return $px;
+        } else {
+            return $px.$depth;
+        }
+    }
+
+    protected function _ifHelper($node, $indent, $mod = '') {
+        $result = $this->php(true).$this->str();
+        $context = $this->getContext($node, 1);
+
+        $result .= "\n";
+        $result .= $this->indent($indent)."if ({$mod}{$context}) {\n";
+
+        $result .= $this->compileNodes($node[Tokenizer::NODES], $indent + 1);
+
+        if (!empty($node[Tokenizer::INVERSE])) {
+            $result .= $this->str().$this->php(true, $indent)."} else {\n";
+            $result .= $this->compileNodes($node[Tokenizer::INVERSE], $indent + 1);
+        }
+
+        $result .= $this->str().$this->php(true, $indent)."}\n";
+
+        $result .= "\n";
+
+        return $result;
     }
 }
